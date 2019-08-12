@@ -1,11 +1,12 @@
 import React, {useReducer, useEffect} from 'react';
 import { Layout } from 'antd';
 import { Polymath, browserUtils } from '@polymathnetwork/sdk';
+
 import actions from './actions';
 import './App.css';
 import Whitelist from './Whitelist';
 
-const { Button, Content } = Layout;
+const { Content } = Layout;
 
 function init() {
   return {
