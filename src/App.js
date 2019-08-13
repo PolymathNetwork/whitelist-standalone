@@ -1,6 +1,7 @@
 import React, {useReducer, useEffect} from 'react';
-import { Layout } from 'antd';
+import { Layout, Input } from 'antd';
 import { Polymath, browserUtils } from '@polymathnetwork/sdk';
+import moment from 'moment';
 
 import actions from './actions';
 import './App.css';
@@ -10,23 +11,32 @@ const { Content } = Layout;
 
 function init() {
   return {
-    tokenAddress: '0x6eE32d5498D08deB3fAa066A785615Dc1fabb4ad',
     tokenSymbol: 'RN',
     shareholders: [],
-    editingShareholder: false
+    editingShareholder: false,
+    symbol: ''
   };
 }
 
 function reducer(state, action) {
   switch (action.type) {
     case actions.CONNECTED:
-      const { polyClient, token, shareholders } = action.payload
+      const { polyClient } = action.payload
       return { ...state,
         polyClient,
-        token,
-        shareholders,
         account: polyClient.context.currentWallet.address
       };
+    case actions.SHAREHOLDERS_FETCHED:
+      const { shareholders } = action.payload
+      return { ...state,
+        shareholders
+      }
+    case actions.TOKEN_FETCHED:
+      const { token } = action.payload
+      return { ...state,
+        token
+      }
+
     case actions.RESET:
       return init();
     default:
@@ -47,44 +57,78 @@ async function connect(dispatch) {
   const config = networkConfigs[networkId];
   const polyClient = new Polymath();
   await polyClient.connect(config);
-  const st = await polyClient.getSecurityToken({symbol: 'RN'});
-  let shareholders = await st.shareholders.getShareholders();
-
-  shareholders = shareholders.map(shareholder => {
-    let converted = {}
-    Object.entries(shareholder).forEach(([key, value]) => {
-      converted[key] = value.toString();
-    });
-    return converted;
-  })
 
   dispatch({type: actions.CONNECTED, payload: { 
-    polyClient,
-    shareholders,
-    token: st
+    polyClient
+  }});
+
+}
+
+async function fetchToken(dispatch, polyClient) {
+  const token = await polyClient.getSecurityToken({symbol: 'RN'});
+  dispatch({type: actions.TOKEN_FETCHED, payload: { 
+    token
   }});
 
   // @TODO remove this
-  global.token = st;
+  global.token = token;
+}
+
+async function fetchShareholders(dispatch, st) {
+  let shareholders = await st.shareholders.getShareholders();
+  shareholders = shareholders.map(shareholder => {
+    const ret = Object.assign({}, shareholder, {
+      canReceiveAfter: moment(shareholder.canReceiveAfter),
+      canSendAfter: moment(shareholder.canSendAfter),
+      kycExpiry: moment(shareholder.kycExpiry)
+    })
+    return ret;
+  });
+  
+  dispatch({
+    type: actions.SHAREHOLDERS_FETCHED,
+    payload: { shareholders }
+  })
 }
 
 function App() {
   const [state, dispatch] = useReducer(reducer, init(), init);
-  const  { shareholders } = state;
+  const  { polyClient, symbol, token, shareholders } = state;
 
   useEffect(() => {
     connect(dispatch);
   }, []);
 
-  function handleEditShareholder() {
+  useEffect(() => {
+    if (polyClient) {
+      fetchToken(dispatch, polyClient);
+    }
+  }, [polyClient])
 
+  useEffect(() => {
+    if (token) {
+      fetchShareholders(dispatch, token);
+    }
+  }, [token]);
+
+  async function modifyWhitelist(shareholders) {
+    try {
+      const queue = await token.shareholders.modifyData({shareholderData: shareholders});
+      await queue.run();
+      fetchShareholders(dispatch, token);
+    }
+    catch(error) {
+      return error;
+    }
   }
 
   return (
     <div className="App">
       <Layout>
         <Content style={{ padding: 50 }}>
-          <Whitelist shareholders={shareholders} />
+          <Input value={symbol} onChange={e => console.log(e.target.value)} />
+          { shareholders.length > 0 && 
+            <Whitelist modifyWhitelist={modifyWhitelist} shareholders={shareholders} /> }
         </Content>
       </Layout>
     </div>

@@ -1,98 +1,232 @@
-import React, { Fragment, useState } from 'react';
-import { Table, Button, Form, Input, DatePicker, Checkbox, Modal } from 'antd';
-
+import React, { Fragment } from 'react';
+import moment from 'moment';
+import { utils as web3Utils } from 'web3';
+import { Table, Button, Form, Input, DatePicker, Checkbox, Modal, Typography } from 'antd';
+const {Column} = Table;
 const {Item} = Form;
+const {Text} = Typography;
 
-const columns = [
-    {
-        title: 'Address',
-        dataIndex: 'address',
-        key: 'address',
-        editable: false
+const formItemLayout = {
+    labelCol: {
+        xs: { span: 24 },
+        sm: { span: 8 },
     },
-    {
-        title: 'Can send after',
-        dataIndex: 'canSendAfter',
-        key: 'canSendAfter',
-        editable: true
+    wrapperCol: {
+        xs: { span: 24 },
+        sm: { span: 16 },
     },
-    {
-        title: 'Can receive after',
-        dataIndex: 'canReceiveAfter',
-        key: 'canReceiveAfter',
-        editable: true
-    },
-    {
-        title: 'KYC expiry',
-        dataIndex: 'kycExpiry',
-        key: 'kycExpiry',
-        editable: true
-    },
-    {
-        title: 'Can buy from STO',
-        dataIndex: 'canBuyFromSto',
-        key: 'canBuyFromSto',
-        editable: true
-    },
-    {
-        title: 'Is accredited',
-        dataIndex: 'isAccredited',
-        key: 'isAccredited',
-        editable: true
+};
+
+function formatDate(input) {
+    return moment(input).format('YYYY-MM-DD');
+}
+
+function formatBool(input) {
+    return input.toString();
+}
+
+const defaultShareholderValues = {
+    address: '',
+    canSendAfter: moment().add(1, 'hour'),
+    canReceiveAfter: moment().add(1, 'hour'),
+    kycExpiry: moment().add(1, 'year'),
+    canBuyFromSto: true,
+    isAccredited: false
+}
+
+const WhitelistForm = Form.create({ name: 'form_in_modal' })(
+    class extends React.Component {
+        render() {
+            const { visible, onCancel, onOk, form, awaitingConfirmation, editedRecord } = this.props;
+            let defaultValues = editedRecord || defaultShareholderValues;
+            console.log('defaultValues', defaultValues)
+            
+            const { getFieldDecorator } = form;
+            return ( 
+            <Modal
+                title="Add a new shareholder"
+                okText="Save"
+                visible={visible}
+                onCancel={onCancel}
+                onOk={onOk}
+                confirmLoading={awaitingConfirmation}
+            >
+                <Form {...formItemLayout}>
+                    <Item name="address" label="Address">
+                        {getFieldDecorator('address', {
+                            rules: [{ required: true }],
+                            initialValue: defaultValues.address
+                        })(
+                            <Input disabled={!!editedRecord}/>
+                        )}
+                    </Item>
+                    <Item name="canSendAfter"  label="Can send after">
+                        {getFieldDecorator('canSendAfter', {
+                            rules: [{ required: true }],
+                            initialValue: defaultValues.canSendAfter
+                        })(
+                            <DatePicker />
+                        )}
+                    </Item>
+                    <Item name="canReceiveAfter" label="Can receive adter">
+                        {getFieldDecorator('canReceiveAfter', {
+                            rules: [{ required: true }],
+                            initialValue: defaultValues.canReceiveAfter
+                        })(
+                            <DatePicker />
+                        )}
+                    </Item>
+                    <Item name="kycExpiry" label="KYC expiry">
+                        {getFieldDecorator('kycExpiry', {
+                            rules: [{ required: true }],
+                            initialValue: defaultValues.kycExpiry
+                        })(
+                            <DatePicker />
+                        )}
+                    </Item>
+                    <Item name="canBuyFromSto" label="Can buy from STO">
+                        {getFieldDecorator('canBuyFromSto', {
+                            valuePropName: 'checked',
+                            initialValue: defaultValues.canBuyFromSto
+                        })(
+                            <Checkbox/>
+                        )}
+                    </Item>
+                    <Item name="isAccredited" label="Is accredited">
+                        {getFieldDecorator('isAccredited', {
+                            valuePropName: 'checked',
+                            initialValue: defaultValues.isAccredited
+                        })(
+                            <Checkbox />
+                        )}
+                    </Item>
+                </Form>
+            </Modal>
+        )}
     }
-];
+);
 
-export default function Whitelist({shareholders}) {
-    const [adding, setAdding] = useState(false);
-    const formItemLayout = {
-        labelCol: {
-            xs: { span: 24 },
-            sm: { span: 8 },
-        },
-        wrapperCol: {
-            xs: { span: 24 },
-            sm: { span: 16 },
-        },
-    };
+export default class Whitelist extends React.Component {
+    state = {
+        editIndex: '',
+        visible: false,
+        awaitingConfirmation: false,
+    }
 
-    const handleSubmit = e => {
-        e.preventDefault();
-        this.props.form.validateFieldsAndScroll((err, values) => {
-            if (!err) {
-                console.log('Received values of form: ', values);
+    closeForm = () => {
+        this.setState({
+            editIndex: '',
+            visible: false,
+            awaitingConfirmation: false
+        });
+        const { form } = this.formRef.props;
+        form.resetFields();
+    }
+
+    openForm = (index = '') => {
+        this.setState({
+            visible: true,
+            editIndex: index
+        });
+    }
+
+    submitForm = async () => {
+        const { form } = this.formRef.props;
+        const { modifyWhitelist } = this.props;
+        form.validateFields(async (err, values) => {
+            if (err) {
+                return;
             }
-            console.log(values)
+
+            this.setState({ awaitingConfirmation: true })
+        
+            values.canSendAfter = values.canSendAfter.toDate();
+            values.canReceiveAfter = values.canReceiveAfter.toDate();
+            values.kycExpiry = values.kycExpiry.toDate();
+            console.log(values);
+
+            const errors = await modifyWhitelist([values]);
+            // @TODO display errors
+            console.log(errors);
+            if (errors) {
+                this.setState({
+                    awaitingConfirmation: false,
+                });
+            }
+            else {
+                this.setState({
+                    visible: false,
+                    awaitingConfirmation: false,
+                    editIndex: ''
+                });
+                form.resetFields();
+            }
+
         });
     };
 
-    return <Fragment>
-        <Table columns={columns} dataSource={shareholders} rowKey="address" />
-        <Modal
-            title="Add a new shareholder"
-            okText="Save"
-            visible={adding}
-            onCancel={() => setAdding(false)}>
-            <Form {...formItemLayout}>
-                <Item name="address" label="Address">
-                    <Input placeholder="address" />
-                </Item>
-                <Item name="canSendAfter"  label="Can send after">
-                    <DatePicker />
-                </Item>
-                <Item name="canReceiveAfter" label="Can receive adter">
-                    <DatePicker />
-                </Item>
-                <Item name="kycExpiry" label="KYC expiry">
-                    <DatePicker />
-                </Item>
-                <Item name="canBuyFromSto" label="Can buy from STO">
-                    <Checkbox />
-                </Item>
-                <Item name="isAccredited" label="Is accredited">
-                    <Checkbox />
-                </Item>
-            </Form>
-        </Modal>
-        <Button type="primary" onClick={() => setAdding(true)}>Add shareholder</Button>
-    </Fragment>;
+    saveFormRef = formRef => {
+        this.formRef = formRef;
+    };
+    
+    render() {
+        const { visible, awaitingConfirmation, editIndex } = this.state;
+        
+        const {shareholders} = this.props;
+        let editedRecord = shareholders.filter(shareholder => shareholder.address === editIndex)[0]
+
+
+        return <Fragment>
+            <Button type="primary" onClick={() => this.openForm()}>Add a shareholder</Button>
+            <Table dataSource={shareholders} rowKey="address">
+                <Column
+                    title='Address'
+                    dataIndex='address'
+                    key='address'
+                    render={(text) => <Text code>{web3Utils.toChecksumAddress(text)}</Text>}
+                />
+                <Column
+                    title='Can send after'
+                    dataIndex='canSendAfter'
+                    key='canSendAfter'
+                    render={(text) => formatDate(text)}
+                />
+                <Column
+                    title='Can receive after'
+                    dataIndex='canReceiveAfter'
+                    key='canReceiveAfter'
+                    render={(text) => formatDate(text)}
+                />
+                <Column
+                    title='KYC expiry'
+                    dataIndex='kycExpiry'
+                    key='kycExpiry'
+                    render={(text) => formatDate(text)}
+                />
+                <Column
+                    title='Can buy from STO'
+                    dataIndex='canBuyFromSto'
+                    key='canBuyFromSto'
+                    render={(text) => formatBool(text)}
+                />
+                <Column
+                    title='Is accredited'
+                    dataIndex='isAccredited'
+                    key='isAccredited'
+                    render={(text) => formatBool(text)}
+                />
+                <Column render={(text, record) => {
+                    return <Button onClick={() => this.openForm(record.address)}>edit</Button>
+                }}/>
+            </Table>
+            <WhitelistForm 
+                wrappedComponentRef={this.saveFormRef}
+                visible={visible}
+                onCancel={this.closeForm}
+                onOk={this.submitForm}
+                awaitingConfirmation={awaitingConfirmation}
+                editedRecord={editedRecord}
+            />
+        </Fragment>;
+    }
 }
