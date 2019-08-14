@@ -42,14 +42,15 @@ const WhitelistForm = Form.create({ name: 'form_in_modal' })(
                 onCancel,
                 onOk, form,
                 awaitingConfirmation,
-                editedRecord
+                editedRecord,
+                shareholderExists
             } = this.props;
             let defaultValues = editedRecord || defaultShareholderValues;
             
             const { getFieldDecorator } = form;
             return ( 
             <Modal
-                title="Add a new shareholder"
+                title={editedRecord ? "Edit shareholder" : "Add a new shareholder"}
                 okText="Save"
                 visible={visible}
                 onCancel={onCancel}
@@ -60,22 +61,28 @@ const WhitelistForm = Form.create({ name: 'form_in_modal' })(
                     <Item name="address" label="Address">
                         {getFieldDecorator('address', {
                             rules: [
-                                { 
-                                required: true,
-                            }, 
-                            // {
-                            //     validator: (rule, value, callback) => {
-                            //         console.log(rule, value, callback)
-                            //         const { shareholderExists } = this.props;
-                            //         if (shareholderExists(value)) {
-                            //             console.log('exists');
-                            //             callback('Shareholder is already present in the whitelist.')
-                            //         }
-                            //         callback()
-                            //     },
-                            //     message: 'Exists'
-                            // }
-                        ],
+                                { required: true  },
+                                {
+                                    validator: (rule, value, callback) => {
+                                        if (!web3Utils.isAddress(value)) {
+                                            callback('Address is invalid')
+                                            return;
+                                        }
+                                        callback()
+                                        return;
+                                    }
+                                },
+                                {
+                                    validator: (rule, value, callback) => {
+                                        if (shareholderExists(value)) {
+                                            callback('Shareholder is already present in the whitelist')
+                                            return;
+                                        }
+                                        callback()
+                                        return;
+                                    }
+                                }
+                            ],
                             initialValue: defaultValues.address
                         })(
                             <Input disabled={!!editedRecord}/>
@@ -164,11 +171,8 @@ export default class Whitelist extends React.Component {
             values.canSendAfter = values.canSendAfter.toDate();
             values.canReceiveAfter = values.canReceiveAfter.toDate();
             values.kycExpiry = values.kycExpiry.toDate();
-            console.log(values);
 
             const error = await modifyWhitelist([values]);
-            // @TODO display errors
-            console.log(error);
             if (error) {
                 this.setState({
                     awaitingConfirmation: false,
@@ -192,9 +196,9 @@ export default class Whitelist extends React.Component {
     };
 
     shareholderExists = (address) => {
-        const { shareholders } = this.state
-        const ret = ( shareholders.find((element) => element.address === address) !== undefined) 
-        console.log('Exists', ret)
+        const { shareholders } = this.props
+        const ret =  shareholders.find((element) => element.address.toUpperCase() === address.toUpperCase())
+         !== undefined
         return ret
     }
     
