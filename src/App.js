@@ -1,5 +1,5 @@
 import React, {useReducer, useEffect} from 'react';
-import { Layout, Input, Button, Form, message } from 'antd';
+import { Layout, Input, Button, Form, message, Tabs } from 'antd';
 import { Polymath, browserUtils } from '@polymathnetwork/sdk';
 import moment from 'moment';
 
@@ -9,6 +9,7 @@ import Whitelist from './Whitelist';
 
 const { Content } = Layout;
 const { Item } = Form;
+const { TabPane } = Tabs;
 
 function init() {
   return {
@@ -63,7 +64,7 @@ async function connect(dispatch) {
   const polyClient = new Polymath();
   await polyClient.connect(config);
   const tokens = await polyClient.getSecurityTokens({owner: currentWallet});
-  // console.log(tokens)
+  console.log(tokens)
 
   dispatch({type: actions.CONNECTED, payload: {
     networkId,
