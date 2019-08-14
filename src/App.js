@@ -1,5 +1,5 @@
 import React, {useReducer, useEffect} from 'react';
-import { Layout, Input } from 'antd';
+import { Layout, Input, Button, Form, message } from 'antd';
 import { Polymath, browserUtils } from '@polymathnetwork/sdk';
 import moment from 'moment';
 
@@ -8,13 +8,15 @@ import './App.css';
 import Whitelist from './Whitelist';
 
 const { Content } = Layout;
+const { Item } = Form;
 
 function init() {
   return {
     tokenSymbol: 'RN',
     shareholders: [],
     editingShareholder: false,
-    symbol: ''
+    symbol: '',
+    fetching: false
   };
 }
 
@@ -26,17 +28,19 @@ function reducer(state, action) {
         polyClient,
         account: polyClient.context.currentWallet.address
       };
+    case actions.SYMBOL_CHANGED:
+      const { symbol } = action.payload
+      return {...state, symbol}
     case actions.SHAREHOLDERS_FETCHED:
       const { shareholders } = action.payload
-      return { ...state,
-        shareholders
-      }
+      return { ...state, shareholders }
+    case actions.TOKEN_FETCH:
+      return { ...state, fetching: true, error: undefined }
     case actions.TOKEN_FETCHED:
       const { token } = action.payload
-      return { ...state,
-        token
-      }
-
+      return { ...state, token, fetching: false }
+    case actions.ERROR:
+        return { ...state, fetching: false }
     case actions.RESET:
       return init();
     default:
@@ -64,14 +68,22 @@ async function connect(dispatch) {
 
 }
 
-async function fetchToken(dispatch, polyClient) {
-  const token = await polyClient.getSecurityToken({symbol: 'RN'});
-  dispatch({type: actions.TOKEN_FETCHED, payload: { 
-    token
-  }});
+async function fetchToken(dispatch, polyClient, symbol) {
+  try {
+    const token = await polyClient.getSecurityToken({symbol});
+    dispatch({type: actions.TOKEN_FETCHED, payload: { 
+      token
+    }});
 
-  // @TODO remove this
-  global.token = token;
+    // @TODO remove this
+    global.token = token;
+  }
+  catch(error) {
+    if(error.message.includes('There is no Security Token with symbol')) {
+      message.error(`There is no Security Token with symbol "${symbol}"`);
+      dispatch({type: actions.ERROR, payload: {error: 'Symbol not found'}})
+    }
+  }
 }
 
 async function fetchShareholders(dispatch, st) {
@@ -93,17 +105,17 @@ async function fetchShareholders(dispatch, st) {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, init(), init);
-  const  { polyClient, symbol, token, shareholders } = state;
+  const  { polyClient, symbol, token, shareholders, fetching } = state;
 
   useEffect(() => {
     connect(dispatch);
   }, []);
 
   useEffect(() => {
-    if (polyClient) {
-      fetchToken(dispatch, polyClient);
+    if (polyClient && fetching && symbol) {
+      fetchToken(dispatch, polyClient, symbol);
     }
-  }, [polyClient])
+  }, [polyClient, fetching, symbol])
 
   useEffect(() => {
     if (token) {
@@ -125,8 +137,21 @@ function App() {
   return (
     <div className="App">
       <Layout>
-        <Content style={{ padding: 50 }}>
-          <Input value={symbol} onChange={e => console.log(e.target.value)} />
+        <Content style={{ padding: 50, backgroundColor: 'white' }}>
+          <Form style={{ paddingBottom: 50}} layout="inline">
+            <Item>
+              <Input size="default" value={symbol} placeholder="Symbol" onPressEnter={() => 
+                dispatch({type: actions.TOKEN_FETCH})}
+              onChange={e => dispatch({
+                type: actions.SYMBOL_CHANGED,
+                payload: {symbol: e.target.value.toUpperCase()}
+              })} />
+            </Item>
+            <Item>
+              <Button type="primary" loading={fetching} disabled={!symbol} onClick={() => 
+                dispatch({type: actions.TOKEN_FETCH})}>Fetch</Button>
+            </Item>
+          </Form>
           { shareholders.length > 0 && 
             <Whitelist modifyWhitelist={modifyWhitelist} shareholders={shareholders} /> }
         </Content>

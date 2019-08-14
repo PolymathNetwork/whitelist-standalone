@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import moment from 'moment';
 import { utils as web3Utils } from 'web3';
-import { Table, Button, Form, Input, DatePicker, Checkbox, Modal, Typography } from 'antd';
+import { Table, Button, Form, Input, DatePicker, Checkbox, Modal, Typography, message } from 'antd';
 const {Column} = Table;
 const {Item} = Form;
 const {Text} = Typography;
@@ -36,10 +36,15 @@ const defaultShareholderValues = {
 
 const WhitelistForm = Form.create({ name: 'form_in_modal' })(
     class extends React.Component {
+        
         render() {
-            const { visible, onCancel, onOk, form, awaitingConfirmation, editedRecord } = this.props;
+            const { visible,
+                onCancel,
+                onOk, form,
+                awaitingConfirmation,
+                editedRecord
+            } = this.props;
             let defaultValues = editedRecord || defaultShareholderValues;
-            console.log('defaultValues', defaultValues)
             
             const { getFieldDecorator } = form;
             return ( 
@@ -54,7 +59,23 @@ const WhitelistForm = Form.create({ name: 'form_in_modal' })(
                 <Form {...formItemLayout}>
                     <Item name="address" label="Address">
                         {getFieldDecorator('address', {
-                            rules: [{ required: true }],
+                            rules: [
+                                { 
+                                required: true,
+                            }, 
+                            // {
+                            //     validator: (rule, value, callback) => {
+                            //         console.log(rule, value, callback)
+                            //         const { shareholderExists } = this.props;
+                            //         if (shareholderExists(value)) {
+                            //             console.log('exists');
+                            //             callback('Shareholder is already present in the whitelist.')
+                            //         }
+                            //         callback()
+                            //     },
+                            //     message: 'Exists'
+                            // }
+                        ],
                             initialValue: defaultValues.address
                         })(
                             <Input disabled={!!editedRecord}/>
@@ -145,13 +166,14 @@ export default class Whitelist extends React.Component {
             values.kycExpiry = values.kycExpiry.toDate();
             console.log(values);
 
-            const errors = await modifyWhitelist([values]);
+            const error = await modifyWhitelist([values]);
             // @TODO display errors
-            console.log(errors);
-            if (errors) {
+            console.log(error);
+            if (error) {
                 this.setState({
                     awaitingConfirmation: false,
                 });
+                message.error(error.message)
             }
             else {
                 this.setState({
@@ -168,6 +190,13 @@ export default class Whitelist extends React.Component {
     saveFormRef = formRef => {
         this.formRef = formRef;
     };
+
+    shareholderExists = (address) => {
+        const { shareholders } = this.state
+        const ret = ( shareholders.find((element) => element.address === address) !== undefined) 
+        console.log('Exists', ret)
+        return ret
+    }
     
     render() {
         const { visible, awaitingConfirmation, editIndex } = this.state;
@@ -175,9 +204,7 @@ export default class Whitelist extends React.Component {
         const {shareholders} = this.props;
         let editedRecord = shareholders.filter(shareholder => shareholder.address === editIndex)[0]
 
-
         return <Fragment>
-            <Button type="primary" onClick={() => this.openForm()}>Add a shareholder</Button>
             <Table dataSource={shareholders} rowKey="address">
                 <Column
                     title='Address'
@@ -219,6 +246,7 @@ export default class Whitelist extends React.Component {
                     return <Button onClick={() => this.openForm(record.address)}>edit</Button>
                 }}/>
             </Table>
+            <Button type="primary" onClick={() => this.openForm()}>Add a shareholder</Button>
             <WhitelistForm 
                 wrappedComponentRef={this.saveFormRef}
                 visible={visible}
@@ -226,6 +254,7 @@ export default class Whitelist extends React.Component {
                 onOk={this.submitForm}
                 awaitingConfirmation={awaitingConfirmation}
                 editedRecord={editedRecord}
+                shareholderExists={this.shareholderExists}
             />
         </Fragment>;
     }
