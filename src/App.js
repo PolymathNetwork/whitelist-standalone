@@ -12,25 +12,24 @@ const { Item } = Form;
 
 function init() {
   return {
-    tokenSymbol: 'RN',
     shareholders: [],
     editingShareholder: false,
-    symbol: '',
-    fetching: false
+    // symbol: '',
+    fetching: false,
+    userAddress: ''
   };
 }
 
 function reducer(state, action) {
   switch (action.type) {
     case actions.CONNECTED:
-      const { polyClient } = action.payload
-      return { ...state,
-        polyClient,
-        account: polyClient.context.currentWallet.address
+      return { 
+        ...state,
+        ...action.payload
       };
-    case actions.SYMBOL_CHANGED:
-      const { symbol } = action.payload
-      return {...state, symbol}
+    // case actions.SYMBOL_CHANGED:
+    //   const { symbol } = action.payload
+    //   return {...state, symbol}
     case actions.SHAREHOLDERS_FETCHED:
       const { shareholders } = action.payload
       return { ...state, shareholders }
@@ -58,33 +57,40 @@ async function connect(dispatch) {
     },
   };
   const networkId = await browserUtils.getNetworkId();
+  const currentWallet = await browserUtils.getCurrentAddress();
+  console.log(currentWallet);
   const config = networkConfigs[networkId];
   const polyClient = new Polymath();
   await polyClient.connect(config);
+  const tokens = await polyClient.getSecurityTokens({owner: currentWallet});
+  // console.log(tokens)
 
-  dispatch({type: actions.CONNECTED, payload: { 
-    polyClient
+  dispatch({type: actions.CONNECTED, payload: {
+    networkId,
+    polyClient,
+    tokens,
+    userAddress: currentWallet,
   }});
 
 }
 
-async function fetchToken(dispatch, polyClient, symbol) {
-  try {
-    const token = await polyClient.getSecurityToken({symbol});
-    dispatch({type: actions.TOKEN_FETCHED, payload: { 
-      token
-    }});
+// async function fetchToken(dispatch, polyClient, symbol) {
+//   try {
+//     const token = await polyClient.getSecurityToken({symbol});
+//     dispatch({type: actions.TOKEN_FETCHED, payload: { 
+//       token
+//     }});
 
-    // @TODO remove this
-    global.token = token;
-  }
-  catch(error) {
-    if(error.message.includes('There is no Security Token with symbol')) {
-      message.error(`There is no Security Token with symbol "${symbol}"`);
-      dispatch({type: actions.ERROR, payload: {error: 'Symbol not found'}})
-    }
-  }
-}
+//     // @TODO remove this
+//     global.token = token;
+//   }
+//   catch(error) {
+//     if(error.message.includes('There is no Security Token with symbol')) {
+//       message.error(`There is no Security Token with symbol "${symbol}"`);
+//       dispatch({type: actions.ERROR, payload: {error: 'Symbol not found'}})
+//     }
+//   }
+// }
 
 async function fetchShareholders(dispatch, st) {
   let shareholders = await st.shareholders.getShareholders();
@@ -105,17 +111,21 @@ async function fetchShareholders(dispatch, st) {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, init(), init);
-  const  { polyClient, symbol, token, shareholders, fetching } = state;
+  const  { polyClient, token, shareholders, fetching, userAddress } = state;
 
   useEffect(() => {
     connect(dispatch);
   }, []);
 
-  useEffect(() => {
-    if (polyClient && fetching && symbol) {
-      fetchToken(dispatch, polyClient, symbol);
-    }
-  }, [polyClient, fetching, symbol])
+  // useEffect(() => {
+  //   if (polyClient && fetching && symbol) {
+  //     fetchToken(dispatch, polyClient, symbol);
+  //   }
+  // }, [polyClient, fetching, symbol])
+
+  // useEffect(() => {
+  //   if (polyClient && userAddress)
+  // })
 
   useEffect(() => {
     if (token) {
@@ -138,7 +148,7 @@ function App() {
     <div className="App">
       <Layout>
         <Content style={{ padding: 50, backgroundColor: 'white' }}>
-          <Form style={{ paddingBottom: 50}} layout="inline">
+          {/* <Form style={{ paddingBottom: 50}} layout="inline">
             <Item>
               <Input size="default" value={symbol} placeholder="Symbol" onPressEnter={() => 
                 dispatch({type: actions.TOKEN_FETCH})}
@@ -151,7 +161,7 @@ function App() {
               <Button type="primary" loading={fetching} disabled={!symbol} onClick={() => 
                 dispatch({type: actions.TOKEN_FETCH})}>Fetch</Button>
             </Item>
-          </Form>
+          </Form> */}
           { shareholders.length > 0 && 
             <Whitelist modifyWhitelist={modifyWhitelist} shareholders={shareholders} /> }
         </Content>
