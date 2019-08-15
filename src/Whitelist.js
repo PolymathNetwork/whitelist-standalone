@@ -64,7 +64,7 @@ const WhitelistForm = Form.create({ name: 'form_in_modal' })(
                                 { required: true  },
                                 {
                                     validator: (rule, value, callback) => {
-                                        if (!web3Utils.isAddress(value)) {
+                                        if (!editedRecord && !web3Utils.isAddress(value)) {
                                             callback('Address is invalid')
                                             return;
                                         }
@@ -74,7 +74,7 @@ const WhitelistForm = Form.create({ name: 'form_in_modal' })(
                                 },
                                 {
                                     validator: (rule, value, callback) => {
-                                        if (shareholderExists(value)) {
+                                        if (!editedRecord && shareholderExists(value)) {
                                             callback('Shareholder is already present in the whitelist')
                                             return;
                                         }

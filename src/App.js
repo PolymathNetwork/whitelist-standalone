@@ -1,5 +1,5 @@
 import React, {useReducer, useEffect} from 'react';
-import { Layout, Input, Button, Form, message, Tabs } from 'antd';
+import { Layout, Input, Button, Form, message, Tabs, Select } from 'antd';
 import { Polymath, browserUtils } from '@polymathnetwork/sdk';
 import moment from 'moment';
 
@@ -10,11 +10,14 @@ import Whitelist from './Whitelist';
 const { Content } = Layout;
 const { Item } = Form;
 const { TabPane } = Tabs;
+const { Option } = Select;
 
 function init() {
   return {
     shareholders: [],
+    tokens: undefined,
     editingShareholder: false,
+    tokenIndex: undefined,
     // symbol: '',
     fetching: false,
     userAddress: ''
@@ -31,6 +34,9 @@ function reducer(state, action) {
     // case actions.SYMBOL_CHANGED:
     //   const { symbol } = action.payload
     //   return {...state, symbol}
+    case actions.TOKEN_SELECTED:
+      const { tokenIndex } = action.payload
+      return { ...state, tokenIndex }
     case actions.SHAREHOLDERS_FETCHED:
       const { shareholders } = action.payload
       return { ...state, shareholders }
@@ -59,12 +65,10 @@ async function connect(dispatch) {
   };
   const networkId = await browserUtils.getNetworkId();
   const currentWallet = await browserUtils.getCurrentAddress();
-  console.log(currentWallet);
   const config = networkConfigs[networkId];
   const polyClient = new Polymath();
   await polyClient.connect(config);
   const tokens = await polyClient.getSecurityTokens({owner: currentWallet});
-  console.log(tokens)
 
   dispatch({type: actions.CONNECTED, payload: {
     networkId,
@@ -82,8 +86,7 @@ async function connect(dispatch) {
 //       token
 //     }});
 
-//     // @TODO remove this
-//     global.token = token;
+//     
 //   }
 //   catch(error) {
 //     if(error.message.includes('There is no Security Token with symbol')) {
@@ -112,57 +115,55 @@ async function fetchShareholders(dispatch, st) {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, init(), init);
-  const  { polyClient, token, shareholders, fetching, userAddress } = state;
+  const  { shareholders, tokens, tokenIndex } = state;
+ 
 
   useEffect(() => {
     connect(dispatch);
   }, []);
 
-  // useEffect(() => {
-  //   if (polyClient && fetching && symbol) {
-  //     fetchToken(dispatch, polyClient, symbol);
-  //   }
-  // }, [polyClient, fetching, symbol])
-
-  // useEffect(() => {
-  //   if (polyClient && userAddress)
-  // })
-
   useEffect(() => {
-    if (token) {
-      fetchShareholders(dispatch, token);
+    if (tokenIndex) {
+      fetchShareholders(dispatch, tokens[tokenIndex]);
+      // @TODO remove this
+      global.token = tokens[tokenIndex];
     }
-  }, [token]);
+  }, [tokens, tokenIndex]);
 
   async function modifyWhitelist(shareholders) {
     try {
-      const queue = await token.shareholders.modifyData({shareholderData: shareholders});
+      const queue = await tokens[tokenIndex].shareholders.modifyData({shareholderData: shareholders});
       await queue.run();
-      fetchShareholders(dispatch, token);
+      fetchShareholders(dispatch, tokens[tokenIndex]);
     }
     catch(error) {
       return error;
     }
   }
 
+  function generateTokensSelectOptions() {
+    const options = !tokens ? [] : tokens.map((token, i) => 
+      <Option value={i} key={i}>{token.symbol}</Option>)
+    return options
+  }
+
   return (
     <div className="App">
       <Layout>
         <Content style={{ padding: 50, backgroundColor: 'white' }}>
-          {/* <Form style={{ paddingBottom: 50}} layout="inline">
-            <Item>
-              <Input size="default" value={symbol} placeholder="Symbol" onPressEnter={() => 
-                dispatch({type: actions.TOKEN_FETCH})}
-              onChange={e => dispatch({
-                type: actions.SYMBOL_CHANGED,
-                payload: {symbol: e.target.value.toUpperCase()}
-              })} />
-            </Item>
-            <Item>
-              <Button type="primary" loading={fetching} disabled={!symbol} onClick={() => 
-                dispatch({type: actions.TOKEN_FETCH})}>Fetch</Button>
-            </Item>
-          </Form> */}
+          <Select
+            autoFocus
+            showSearch
+            style={{ width: 200, marginBottom: 50 }}
+            placeholder="Select a token"
+            optionFilterProp="children"
+            onChange={(index) => dispatch({ type: actions.TOKEN_SELECTED, payload: { tokenIndex: index }})}
+            filterOption={(input, option) =>
+              option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+          >
+            {generateTokensSelectOptions()}
+          </Select>
           { shareholders.length > 0 && 
             <Whitelist modifyWhitelist={modifyWhitelist} shareholders={shareholders} /> }
         </Content>
