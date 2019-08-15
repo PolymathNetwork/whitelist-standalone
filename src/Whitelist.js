@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import moment from 'moment';
 import { utils as web3Utils } from 'web3';
-import { Table, Button, Form, Input, DatePicker, Checkbox, Modal, Typography, message } from 'antd';
+import { Table, Button, Form, Input, DatePicker, Checkbox, Modal, Typography, Spin, message } from 'antd';
 const {Column} = Table;
 const {Item} = Form;
 const {Text} = Typography;
@@ -57,6 +57,7 @@ const WhitelistForm = Form.create({ name: 'form_in_modal' })(
                 onOk={onOk}
                 confirmLoading={awaitingConfirmation}
             >
+                <Spin spinning={awaitingConfirmation} size="large">
                 <Form {...formItemLayout}>
                     <Item name="address" label="Address">
                         {getFieldDecorator('address', {
@@ -88,7 +89,7 @@ const WhitelistForm = Form.create({ name: 'form_in_modal' })(
                             <Input disabled={!!editedRecord}/>
                         )}
                     </Item>
-                    <Item name="canSendAfter"  label="Can send after">
+                    <Item name="canSendAfter"  label="Can Send after">
                         {getFieldDecorator('canSendAfter', {
                             rules: [{ required: true }],
                             initialValue: defaultValues.canSendAfter
@@ -96,7 +97,7 @@ const WhitelistForm = Form.create({ name: 'form_in_modal' })(
                             <DatePicker />
                         )}
                     </Item>
-                    <Item name="canReceiveAfter" label="Can receive adter">
+                    <Item name="canReceiveAfter" label="Can Receive adter">
                         {getFieldDecorator('canReceiveAfter', {
                             rules: [{ required: true }],
                             initialValue: defaultValues.canReceiveAfter
@@ -104,7 +105,7 @@ const WhitelistForm = Form.create({ name: 'form_in_modal' })(
                             <DatePicker />
                         )}
                     </Item>
-                    <Item name="kycExpiry" label="KYC expiry">
+                    <Item name="kycExpiry" label="KYC Expiry">
                         {getFieldDecorator('kycExpiry', {
                             rules: [{ required: true }],
                             initialValue: defaultValues.kycExpiry
@@ -112,7 +113,7 @@ const WhitelistForm = Form.create({ name: 'form_in_modal' })(
                             <DatePicker />
                         )}
                     </Item>
-                    <Item name="canBuyFromSto" label="Can buy from STO">
+                    <Item name="canBuyFromSto" label="Can Buy from STO">
                         {getFieldDecorator('canBuyFromSto', {
                             valuePropName: 'checked',
                             initialValue: defaultValues.canBuyFromSto
@@ -120,7 +121,7 @@ const WhitelistForm = Form.create({ name: 'form_in_modal' })(
                             <Checkbox/>
                         )}
                     </Item>
-                    <Item name="isAccredited" label="Is accredited">
+                    <Item name="isAccredited" label="Accredited">
                         {getFieldDecorator('isAccredited', {
                             valuePropName: 'checked',
                             initialValue: defaultValues.isAccredited
@@ -129,6 +130,7 @@ const WhitelistForm = Form.create({ name: 'form_in_modal' })(
                         )}
                     </Item>
                 </Form>
+                </Spin>
             </Modal>
         )}
     }

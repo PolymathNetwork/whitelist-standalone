@@ -1,5 +1,5 @@
 import React, {useReducer, useEffect} from 'react';
-import { Layout, Input, Button, Form, message, Tabs, Select } from 'antd';
+import { Layout, Input, Button, Form, message, Tabs, Select, Spin } from 'antd';
 import { Polymath, browserUtils } from '@polymathnetwork/sdk';
 import moment from 'moment';
 
@@ -18,7 +18,6 @@ function init() {
     tokens: undefined,
     editingShareholder: false,
     tokenIndex: undefined,
-    // symbol: '',
     fetching: false,
     userAddress: ''
   };
@@ -26,35 +25,32 @@ function init() {
 
 function reducer(state, action) {
   switch (action.type) {
+    case actions.CONNECTING:
+      return { ...state, tip: 'Loading Tokens...', fetching: true }
     case actions.CONNECTED:
       return { 
         ...state,
-        ...action.payload
-      };
-    // case actions.SYMBOL_CHANGED:
-    //   const { symbol } = action.payload
-    //   return {...state, symbol}
+        ...action.payload,
+        fetching: false
+      }
     case actions.TOKEN_SELECTED:
       const { tokenIndex } = action.payload
-      return { ...state, tokenIndex }
+      return { ...state, tokenIndex, tip: 'Loading investors whitelist...', fetching: true }
     case actions.SHAREHOLDERS_FETCHED:
       const { shareholders } = action.payload
-      return { ...state, shareholders }
-    case actions.TOKEN_FETCH:
-      return { ...state, fetching: true, error: undefined }
-    case actions.TOKEN_FETCHED:
-      const { token } = action.payload
-      return { ...state, token, fetching: false }
+      return { ...state, shareholders, fetching: false }
     case actions.ERROR:
         return { ...state, fetching: false }
     case actions.RESET:
       return init();
     default:
-      throw new Error('Unrecognised action');
+      throw new Error(`Unrecognised action "${action.type}"`);
   }
 }
 
 async function connect(dispatch) {
+  dispatch({type: actions.CONNECTING});
+
   const networkConfigs = {
     1: {
       polymathRegistryAddress: '0x240f9f86b1465bf1b8eb29bc88cbf65573dfdd97'
@@ -79,23 +75,6 @@ async function connect(dispatch) {
 
 }
 
-// async function fetchToken(dispatch, polyClient, symbol) {
-//   try {
-//     const token = await polyClient.getSecurityToken({symbol});
-//     dispatch({type: actions.TOKEN_FETCHED, payload: { 
-//       token
-//     }});
-
-//     
-//   }
-//   catch(error) {
-//     if(error.message.includes('There is no Security Token with symbol')) {
-//       message.error(`There is no Security Token with symbol "${symbol}"`);
-//       dispatch({type: actions.ERROR, payload: {error: 'Symbol not found'}})
-//     }
-//   }
-// }
-
 async function fetchShareholders(dispatch, st) {
   let shareholders = await st.shareholders.getShareholders();
   shareholders = shareholders.map(shareholder => {
@@ -115,7 +94,7 @@ async function fetchShareholders(dispatch, st) {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, init(), init);
-  const  { shareholders, tokens, tokenIndex } = state;
+  const  { shareholders, tokens, tokenIndex, fetching, tip } = state;
  
 
   useEffect(() => {
@@ -149,25 +128,27 @@ function App() {
 
   return (
     <div className="App">
-      <Layout>
-        <Content style={{ padding: 50, backgroundColor: 'white' }}>
-          <Select
-            autoFocus
-            showSearch
-            style={{ width: 200, marginBottom: 50 }}
-            placeholder="Select a token"
-            optionFilterProp="children"
-            onChange={(index) => dispatch({ type: actions.TOKEN_SELECTED, payload: { tokenIndex: index }})}
-            filterOption={(input, option) =>
-              option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-          >
-            {generateTokensSelectOptions()}
-          </Select>
-          { shareholders.length > 0 && 
-            <Whitelist modifyWhitelist={modifyWhitelist} shareholders={shareholders} /> }
-        </Content>
-      </Layout>
+      <Spin spinning={fetching} tip={tip} size="large">
+        <Layout>
+          <Content style={{ padding: 50, backgroundColor: 'white' }}>
+            <Select
+              autoFocus
+              showSearch
+              style={{ width: 200, marginBottom: 50 }}
+              placeholder="Select a token"
+              optionFilterProp="children"
+              onChange={(index) => dispatch({ type: actions.TOKEN_SELECTED, payload: { tokenIndex: index }})}
+              filterOption={(input, option) =>
+                option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {generateTokensSelectOptions()}
+            </Select>
+            { shareholders.length > 0 && 
+              <Whitelist modifyWhitelist={modifyWhitelist} shareholders={shareholders} /> }
+          </Content>
+        </Layout>
+      </Spin>
     </div>
   );
 }
