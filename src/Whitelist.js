@@ -1,7 +1,9 @@
 import React, { Fragment } from 'react';
 import moment from 'moment';
 import { utils as web3Utils } from 'web3';
-import { Table, Button, Form, Input, DatePicker, Checkbox, Modal, Typography, Spin, message } from 'antd';
+import { Table, Button, Form, Input, DatePicker, Checkbox, Modal, Typography, Spin, Icon, message } from 'antd';
+import TrueSVG from './assets/icon-true.svg';
+
 const {Column} = Table;
 const {Item} = Form;
 const {Text} = Typography;
@@ -22,7 +24,9 @@ function formatDate(input) {
 }
 
 function formatBool(input) {
-    return input.toString();
+    return input ? 
+        <Fragment><Icon style={{color: '#00AA5E'}} type="check-circle" theme="filled"/><span>   Yes</span></Fragment> :
+        <Fragment><Icon style={{color: '#DB2C3E'}} type="close-circle" theme="filled"/><span>   No</span></Fragment>;
 }
 
 const defaultShareholderValues = {
@@ -249,7 +253,9 @@ export default class Whitelist extends React.Component {
                     render={(text) => formatBool(text)}
                 />
                 <Column render={(text, record) => {
-                    return <Button onClick={() => this.openForm(record.address)}>edit</Button>
+                    return <Button onClick={() => this.openForm(record.address)}>
+                        <Icon type="edit" />
+                    </Button>
                 }}/>
             </Table>
             <Button type="primary" onClick={() => this.openForm()}>Add a shareholder</Button>

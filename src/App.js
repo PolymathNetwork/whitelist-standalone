@@ -4,10 +4,9 @@ import { Polymath, browserUtils } from '@polymathnetwork/sdk';
 import moment from 'moment';
 
 import actions from './actions';
-import './App.css';
 import Whitelist from './Whitelist';
 
-const { Content } = Layout;
+const { Content, Header } = Layout;
 const { Item } = Form;
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -26,7 +25,7 @@ function init() {
 function reducer(state, action) {
   switch (action.type) {
     case actions.CONNECTING:
-      return { ...state, tip: 'Loading Tokens...', fetching: true }
+      return { ...state, tip: 'Loading your tokens...', fetching: true }
     case actions.CONNECTED:
       return { 
         ...state,
@@ -94,7 +93,7 @@ async function fetchShareholders(dispatch, st) {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, init(), init);
-  const  { shareholders, tokens, tokenIndex, fetching, tip } = state;
+  const  { shareholders, tokens, tokenIndex, fetching, tip, userAddress } = state;
  
 
   useEffect(() => {
@@ -130,7 +129,8 @@ function App() {
     <div className="App">
       <Spin spinning={fetching} tip={tip} size="large">
         <Layout>
-          <Content style={{ padding: 50, backgroundColor: 'white' }}>
+          <Header style={{backgroundColor: 'white'}}>{userAddress}</Header>
+          <Content style={{ padding: 50, backgroundColor: '#FAFDFF' }}>
             <Select
               autoFocus
               showSearch

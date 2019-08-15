@@ -1,6 +1,8 @@
+@import '~antd/dist/antd.css';
+
 @font-face {
   font-family: 'Inter';
-  src: local('Inter'), url(./fonts/Inter-Regular.woff) format('woff');
+  src: local('Inter'), url(./assets/Inter-Regular.woff) format('woff');
 }
 
 body {
@@ -10,10 +12,15 @@ body {
     sans-serif; */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: "Inter"
+  font-family: "Inter";
+  background-color: #FAFDFF;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 } 
+
+.App {
+  text-align: center;
+}
