@@ -1,0 +1,19 @@
+{
+  "files": {
+    "main.css": "/white-label/static/css/main.af69d6b7.chunk.css",
+    "main.js": "/white-label/static/js/main.7eb6c06f.chunk.js",
+    "main.js.map": "/white-label/static/js/main.7eb6c06f.chunk.js.map",
+    "runtime~main.js": "/white-label/static/js/runtime~main.fb4fee24.js",
+    "runtime~main.js.map": "/white-label/static/js/runtime~main.fb4fee24.js.map",
+    "static/css/2.93e9ecf4.chunk.css": "/white-label/static/css/2.93e9ecf4.chunk.css",
+    "static/js/2.1eca9b83.chunk.js": "/white-label/static/js/2.1eca9b83.chunk.js",
+    "static/js/2.1eca9b83.chunk.js.map": "/white-label/static/js/2.1eca9b83.chunk.js.map",
+    "index.html": "/white-label/index.html",
+    "precache-manifest.d7adac48febd5f568916857c1148dacb.js": "/white-label/precache-manifest.d7adac48febd5f568916857c1148dacb.js",
+    "service-worker.js": "/white-label/service-worker.js",
+    "static/css/2.93e9ecf4.chunk.css.map": "/white-label/static/css/2.93e9ecf4.chunk.css.map",
+    "static/css/main.af69d6b7.chunk.css.map": "/white-label/static/css/main.af69d6b7.chunk.css.map",
+    "static/media/index.css": "/white-label/static/media/Inter-Regular.da83100f.woff",
+    "static/media/icon-true.svg": "/white-label/static/media/icon-true.948f1865.svg"
+  }
+}
