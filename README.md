@@ -7,4 +7,4 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 - Clone this repo `git clone https://github.com/PolymathNetwork/white-label.git`
 - `cd white-label`
 - Install dependencies `yarn`
-- Finally, `yarn start`. The app will be server at `http://localhost:300`.
+- Finally, `yarn start`. The app will be served at `http://localhost:3000`.
