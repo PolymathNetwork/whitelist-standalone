@@ -1,5 +1,5 @@
 import React, {useReducer, useEffect} from 'react';
-import { Layout, Input, Button, Form, message, Tabs, Select, Spin } from 'antd';
+import { Layout, Input, Button, Form, Icon, Tabs, Select, Spin } from 'antd';
 import { Polymath, browserUtils } from '@polymathnetwork/sdk';
 import moment from 'moment';
 
@@ -129,7 +129,9 @@ function App() {
     <div className="App">
       <Spin spinning={fetching} tip={tip} size="large">
         <Layout>
-          <Header style={{backgroundColor: 'white'}}>{userAddress}</Header>
+          <Header style={{backgroundColor: 'white', display: 'flex', flexDirection: 'row', justifyContent: 'flex-end'}}>
+            <span style={{color: '#1348E4'}}>{userAddress}</span>
+          </Header>
           <Content style={{ padding: 50, backgroundColor: '#FAFDFF' }}>
             <Select
               autoFocus

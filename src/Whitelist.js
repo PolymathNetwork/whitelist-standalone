@@ -214,13 +214,14 @@ export default class Whitelist extends React.Component {
         const {shareholders} = this.props;
         let editedRecord = shareholders.filter(shareholder => shareholder.address === editIndex)[0]
 
-        return <Fragment>
+        return <div style={{display: 'flex', flexDirection: 'column'}}>
+            <Button type="primary" style={{marginBottom: 20, alignSelf: 'flex-end'}} onClick={() => this.openForm()}>Add new</Button>
             <Table dataSource={shareholders} rowKey="address">
                 <Column
                     title='Address'
                     dataIndex='address'
                     key='address'
-                    render={(text) => <Text code>{web3Utils.toChecksumAddress(text)}</Text>}
+                    render={(text) => <Text>{web3Utils.toChecksumAddress(text)}</Text>}
                 />
                 <Column
                     title='Can send after'
@@ -258,7 +259,6 @@ export default class Whitelist extends React.Component {
                     </Button>
                 }}/>
             </Table>
-            <Button type="primary" onClick={() => this.openForm()}>Add a shareholder</Button>
             <WhitelistForm 
                 wrappedComponentRef={this.saveFormRef}
                 visible={visible}
@@ -268,6 +268,6 @@ export default class Whitelist extends React.Component {
                 editedRecord={editedRecord}
                 shareholderExists={this.shareholderExists}
             />
-        </Fragment>;
+        </div>;
     }
 }
