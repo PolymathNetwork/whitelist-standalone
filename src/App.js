@@ -109,14 +109,24 @@ function App() {
   }, [tokens, tokenIndex]);
 
   async function modifyWhitelist(shareholders) {
-    try {
-      const queue = await tokens[tokenIndex].shareholders.modifyData({shareholderData: shareholders});
-      await queue.run();
-      await fetchShareholders(dispatch, tokens[tokenIndex]);
-    }
-    catch(error) {
-      return error;
-    }
+    const queue = await tokens[tokenIndex].shareholders.modifyData({shareholderData: shareholders});
+    await queue.run();
+    await fetchShareholders(dispatch, tokens[tokenIndex]);
+  }
+
+  async function deleteShareholders(shareholders) {
+    shareholders = shareholders.map(shareholder => ({
+      address: shareholder.address,
+      canReceiveAfter: 0,
+      canSendAfter: 0,
+      kycExpiry: 0,
+      isAccredited: 0,
+      canBuyFromSto: 0
+    }));
+
+    const queue = await tokens[tokenIndex].shareholders.modifyData({shareholderData: shareholders});
+    await queue.run();
+    await fetchShareholders(dispatch, tokens[tokenIndex]);
   }
 
   function generateTokensSelectOptions() {
@@ -147,7 +157,12 @@ function App() {
               {generateTokensSelectOptions()}
             </Select>
             { tokenIndex !== undefined && 
-              <Whitelist modifyWhitelist={modifyWhitelist} shareholders={shareholders} /> }
+              <Whitelist
+                modifyWhitelist={modifyWhitelist}
+                deleteShareholders={deleteShareholders}
+                shareholders={shareholders}
+              />
+            }
           </Content>
         </Layout>
       </Spin>

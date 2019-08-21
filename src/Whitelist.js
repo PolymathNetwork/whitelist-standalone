@@ -177,14 +177,8 @@ export default class Whitelist extends React.Component {
             values.canReceiveAfter = values.canReceiveAfter.toDate();
             values.kycExpiry = values.kycExpiry.toDate();
 
-            const error = await modifyWhitelist([values]);
-            if (error) {
-                this.setState({
-                    awaitingConfirmation: false,
-                });
-                message.error(error.message)
-            }
-            else {
+            try {
+                await modifyWhitelist([values]);
                 this.setState({
                     visible: false,
                     awaitingConfirmation: false,
@@ -192,7 +186,12 @@ export default class Whitelist extends React.Component {
                 });
                 form.resetFields();
             }
-
+            catch (error) {
+                this.setState({
+                    awaitingConfirmation: false,
+                });
+                message.error(error.message)
+            }
         });
     };
 
@@ -210,7 +209,7 @@ export default class Whitelist extends React.Component {
     render() {
         const { visible, awaitingConfirmation, editIndex } = this.state;
         
-        const {shareholders} = this.props;
+        const { shareholders, deleteShareholders } = this.props;
         let editedRecord = shareholders.filter(shareholder => shareholder.address === editIndex)[0]
 
         return <div style={{display: 'flex', flexDirection: 'column'}}>
@@ -253,9 +252,16 @@ export default class Whitelist extends React.Component {
                     render={(text) => formatBool(text)}
                 />
                 <Column render={(text, record) => {
-                    return <Button onClick={() => this.openForm(record.address)}>
-                        <Icon type="edit" />
-                    </Button>
+                    return (
+                        <Fragment>
+                            <Button onClick={() => this.openForm(record.address)}>
+                                <Icon type="edit" theme="filled" />
+                            </Button>
+                            {/* <Button onClick={() => deleteShareholders([record])}>
+                                <Icon type="delete" theme="filled" />
+                            </Button> */}
+                        </Fragment>
+                    )
                 }}/>
             </Table>
             <WhitelistForm 
