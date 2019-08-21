@@ -101,7 +101,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (tokenIndex) {
+    if (tokenIndex !== undefined) {
       fetchShareholders(dispatch, tokens[tokenIndex]);
       // @TODO remove this
       global.token = tokens[tokenIndex];
@@ -112,7 +112,7 @@ function App() {
     try {
       const queue = await tokens[tokenIndex].shareholders.modifyData({shareholderData: shareholders});
       await queue.run();
-      fetchShareholders(dispatch, tokens[tokenIndex]);
+      await fetchShareholders(dispatch, tokens[tokenIndex]);
     }
     catch(error) {
       return error;
@@ -146,7 +146,7 @@ function App() {
             >
               {generateTokensSelectOptions()}
             </Select>
-            { shareholders.length > 0 && 
+            { tokenIndex !== undefined && 
               <Whitelist modifyWhitelist={modifyWhitelist} shareholders={shareholders} /> }
           </Content>
         </Layout>

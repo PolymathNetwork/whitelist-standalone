@@ -2,7 +2,6 @@ import React, { Fragment } from 'react';
 import moment from 'moment';
 import { utils as web3Utils } from 'web3';
 import { Table, Button, Form, Input, DatePicker, Checkbox, Modal, Typography, Spin, Icon, message } from 'antd';
-import TrueSVG from './assets/icon-true.svg';
 
 const {Column} = Table;
 const {Item} = Form;
@@ -40,7 +39,7 @@ const defaultShareholderValues = {
 
 const WhitelistForm = Form.create({ name: 'form_in_modal' })(
     class extends React.Component {
-        
+
         render() {
             const { visible,
                 onCancel,
