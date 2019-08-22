@@ -27,50 +27,50 @@ function init() {
 
 function reducer(state, action) {
   switch (action.type) {
-    case actions.CONNECTING:
-      return { 
-        ...state,
-        tip: 'Connecting...',
-        connecting: true,
-        error: undefined
-      }
-    case actions.CONNECTED:
-      return { 
-        ...state,
-        ...action.payload,
-        connecting: false,
-        tip: undefined,
-        error: undefined,
-      }
-    case actions.CONNECTION_ERROR:
-      const { error } = action.payload;
-      return {
-        ...state,
-        error,
-        connecting: false,
-      }
-    case actions.TOKEN_SELECTED:
-      const { tokenIndex } = action.payload
-      return { 
-        ...state,
-        tokenIndex,
-        tip: 'Loading investors whitelist...',
-        fetching: true 
-      }
-    case actions.SHAREHOLDERS_FETCHED:
-      const { shareholders } = action.payload
-      return { 
-        ...state,
-        shareholders,
-        fetching: false,
-        tip: undefined
-      }
-    case actions.ERROR:
-        return { ...state, fetching: false }
-    case actions.RESET:
-      return init();
-    default:
-      throw new Error(`Unrecognised action "${action.type}"`);
+  case actions.CONNECTING:
+    return { 
+      ...state,
+      tip: 'Connecting...',
+      connecting: true,
+      error: undefined
+    }
+  case actions.CONNECTED:
+    return { 
+      ...state,
+      ...action.payload,
+      connecting: false,
+      tip: undefined,
+      error: undefined,
+    }
+  case actions.CONNECTION_ERROR:
+    const { error } = action.payload;
+    return {
+      ...state,
+      error,
+      connecting: false,
+    }
+  case actions.TOKEN_SELECTED:
+    const { tokenIndex } = action.payload
+    return { 
+      ...state,
+      tokenIndex,
+      tip: 'Loading investors whitelist...',
+      fetching: true 
+    }
+  case actions.SHAREHOLDERS_FETCHED:
+    const { shareholders } = action.payload
+    return { 
+      ...state,
+      shareholders,
+      fetching: false,
+      tip: undefined
+    }
+  case actions.ERROR:
+    return { ...state, fetching: false }
+  case actions.RESET:
+    return init();
+  default:
+    throw new Error(`Unrecognised action "${action.type}"`);
   }
 }
 
