@@ -1,14 +1,13 @@
-import React, {useReducer, useEffect} from 'react';
-import { Layout, Input, Button, Form, Icon, Tabs, Select, Spin } from 'antd';
+import React, {useReducer, useEffect, Fragment} from 'react';
+import { Layout, Select, Spin, Alert, Icon, Typography } from 'antd';
 import { Polymath, browserUtils } from '@polymathnetwork/sdk';
 import moment from 'moment';
 
 import actions from './actions';
 import Whitelist from './Whitelist';
+import { networkConfigs } from './config';
 
 const { Content, Header } = Layout;
-const { Item } = Form;
-const { TabPane } = Tabs;
 const { Option } = Select;
 
 function init() {
@@ -18,26 +17,54 @@ function init() {
     editingShareholder: false,
     tokenIndex: undefined,
     fetching: false,
-    userAddress: ''
+    userAddress: '',
+    polyClient: undefined,
+    connected: false,
+    error: '',
+    networkId: 0
   };
 }
 
 function reducer(state, action) {
   switch (action.type) {
     case actions.CONNECTING:
-      return { ...state, tip: 'Loading your tokens...', fetching: true }
+      return { 
+        ...state,
+        tip: 'Connecting...',
+        connecting: true,
+        error: undefined
+      }
     case actions.CONNECTED:
       return { 
         ...state,
         ...action.payload,
-        fetching: false
+        connecting: false,
+        tip: undefined,
+        error: undefined,
+      }
+    case actions.CONNECTION_ERROR:
+      const { error } = action.payload;
+      return {
+        ...state,
+        error,
+        connecting: false,
       }
     case actions.TOKEN_SELECTED:
       const { tokenIndex } = action.payload
-      return { ...state, tokenIndex, tip: 'Loading investors whitelist...', fetching: true }
+      return { 
+        ...state,
+        tokenIndex,
+        tip: 'Loading investors whitelist...',
+        fetching: true 
+      }
     case actions.SHAREHOLDERS_FETCHED:
       const { shareholders } = action.payload
-      return { ...state, shareholders, fetching: false }
+      return { 
+        ...state,
+        shareholders,
+        fetching: false,
+        tip: undefined
+      }
     case actions.ERROR:
         return { ...state, fetching: false }
     case actions.RESET:
@@ -50,28 +77,29 @@ function reducer(state, action) {
 async function connect(dispatch) {
   dispatch({type: actions.CONNECTING});
 
-  const networkConfigs = {
-    1: {
-      polymathRegistryAddress: '0xdfabf3e4793cd30affb47ab6fa4cf4eef26bbc27'
-    },
-    42: {
-      polymathRegistryAddress: '0x5b215a7d39ee305ad28da29bf2f0425c6c2a00b3'
-    },
-  };
-  const networkId = await browserUtils.getNetworkId();
-  const currentWallet = await browserUtils.getCurrentAddress();
-  const config = networkConfigs[networkId];
-  const polyClient = new Polymath();
-  await polyClient.connect(config);
-  const tokens = await polyClient.getSecurityTokens({owner: currentWallet});
+  try {
+    const networkId = await browserUtils.getNetworkId();
+    const currentWallet = await browserUtils.getCurrentAddress();
+    if (![-1, 1, 42].includes(networkId)) {
+      dispatch({ type: actions.CONNECTION_ERROR, payload: { error: 'Please switch to either Main or Kovan network' }})
+      return;
+    }
 
-  dispatch({type: actions.CONNECTED, payload: {
-    networkId,
-    polyClient,
-    tokens,
-    userAddress: currentWallet,
-  }});
+    const config = networkConfigs[networkId];
+    const polyClient = new Polymath();
+    await polyClient.connect(config);
+    const tokens = await polyClient.getSecurityTokens({owner: currentWallet});
 
+    dispatch({type: actions.CONNECTED, payload: {
+      networkId,
+      polyClient,
+      tokens,
+      userAddress: currentWallet,
+    }});
+  }
+  catch(error) {
+    dispatch({ type: actions.CONNECTION_ERROR, payload: { error: error.message }})
+  }
 }
 
 async function fetchShareholders(dispatch, st) {
@@ -91,11 +119,36 @@ async function fetchShareholders(dispatch, st) {
   })
 }
 
+function Network({networkId}) {
+  networkId = networkId.toString();
+  const networks = {
+    0: 'Disconnected',
+    1: 'Mainnet',
+    42: 'Kovan'
+  }
+  return (
+    <Fragment>
+      <Icon type="global" />
+      <Typography.Text style={{ marginRight: 5, marginLeft: 10 }}>{networks[networkId]}</Typography.Text>
+    </Fragment>
+  );
+}
+
+function User({userAddress}) {
+  if (userAddress)
+    return (
+      <Fragment>
+        <Icon type="user" />
+        <Typography.Text style={{ marginRight: 5, marginLeft: 10 }}>{userAddress}</Typography.Text>
+      </Fragment>
+    );
+  return null;
+}
+
 function App() {
   const [state, dispatch] = useReducer(reducer, init(), init);
-  const  { shareholders, tokens, tokenIndex, fetching, tip, userAddress } = state;
+  const  { shareholders, tokens, tokenIndex, fetching, tip, userAddress, connecting, error, networkId } = state;
  
-
   useEffect(() => {
     connect(dispatch);
   }, []);
@@ -137,25 +190,32 @@ function App() {
 
   return (
     <div className="App">
-      <Spin spinning={fetching} tip={tip} size="large">
+      <Spin spinning={fetching || connecting} tip={tip} size="large">
         <Layout>
-          <Header style={{backgroundColor: 'white', display: 'flex', flexDirection: 'row', justifyContent: 'flex-end'}}>
-            <span style={{color: '#1348E4'}}>{userAddress}</span>
+          <Header style={{backgroundColor: 'white', display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
+            <Network networkId={networkId} />
+            <User userAddress={userAddress} />
           </Header>
           <Content style={{ padding: 50, backgroundColor: '#FAFDFF' }}>
-            <Select
-              autoFocus
-              showSearch
-              style={{ width: 200, marginBottom: 50 }}
-              placeholder="Select a token"
-              optionFilterProp="children"
-              onChange={(index) => dispatch({ type: actions.TOKEN_SELECTED, payload: { tokenIndex: index }})}
-              filterOption={(input, option) =>
-                option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-            >
-              {generateTokensSelectOptions()}
-            </Select>
+            { error && <Alert
+              message={error}
+              type="error"
+            />}
+            { userAddress &&
+              <Select
+                autoFocus
+                showSearch
+                style={{ width: 200, marginBottom: 50 }}
+                placeholder="Select a token"
+                optionFilterProp="children"
+                onChange={(index) => dispatch({ type: actions.TOKEN_SELECTED, payload: { tokenIndex: index }})}
+                filterOption={(input, option) =>
+                  option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+              >
+                {generateTokensSelectOptions()}
+              </Select> 
+            }
             { tokenIndex !== undefined && 
               <Whitelist
                 modifyWhitelist={modifyWhitelist}
