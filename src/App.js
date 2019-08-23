@@ -24,7 +24,6 @@ function init() {
     userAddress: '',
     polyClient: undefined,
     connected: false,
-    forceFetchShareholders: false,
     error: '',
     networkId: 0
   };
@@ -63,19 +62,22 @@ function reducer(state, action) {
       fetching: true 
     }
   case actions.SHAREHOLDERS_FETCHED:
-    const { shareholders } = action.payload
     return { 
       ...state,
-      shareholders,
       fetching: false,
       tip: undefined,
-      forceFetchShareholders: false,
     }
-  case actions.SHAREHOLDERS_UPDATED:
-    return {
-      ...state,
-      forceFetchShareholders: true,
-    }
+  case actions.STORE_SHAREHOLDERS:
+    let { shareholders } = action.payload
+    shareholders = shareholders.map(shareholder => {
+      const ret = Object.assign({}, shareholder, {
+        canReceiveAfter: moment(shareholder.canReceiveAfter),
+        canSendAfter: moment(shareholder.canSendAfter),
+        kycExpiry: moment(shareholder.kycExpiry)
+      });
+      return ret;
+    });
+    return { ...state, shareholders };
   case actions.ERROR:
     return { ...state, fetching: false }
   case actions.RESET:
@@ -115,19 +117,8 @@ async function connect(dispatch) {
 
 async function fetchShareholders(dispatch, st) {
   let shareholders = await st.shareholders.getShareholders();
-  shareholders = shareholders.map(shareholder => {
-    const ret = Object.assign({}, shareholder, {
-      canReceiveAfter: moment(shareholder.canReceiveAfter),
-      canSendAfter: moment(shareholder.canSendAfter),
-      kycExpiry: moment(shareholder.kycExpiry)
-    })
-    return ret;
-  });
-  
-  dispatch({
-    type: actions.SHAREHOLDERS_FETCHED,
-    payload: { shareholders }
-  })
+  dispatch({ type: actions.SHAREHOLDERS_FETCHED });
+  dispatch({ type: actions.STORE_SHAREHOLDERS, payload: { shareholders }});
 }
 
 function Network({networkId}) {
@@ -158,25 +149,26 @@ function User({userAddress}) {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, init(), init);
-  const  { shareholders, tokens, tokenIndex, fetching, tip, userAddress, connecting, error, networkId, forceFetchShareholders } = state;
+  const  { shareholders, tokens, tokenIndex, fetching, tip, userAddress, connecting, error, networkId } = state;
  
   useEffect(() => {
     connect(dispatch);
   }, []);
 
   useEffect(() => {
-    if (tokenIndex !== undefined || forceFetchShareholders) {
+    if (tokenIndex !== undefined 
+    ) {
       fetchShareholders(dispatch, tokens[tokenIndex]);
       // @TODO remove this
       global.token = tokens[tokenIndex];
     }
-  }, [tokens, tokenIndex, forceFetchShareholders]);
+  }, [tokens, tokenIndex]);
 
   async function modifyWhitelist(shareholders) {
     const queue = await tokens[tokenIndex].shareholders.modifyData({shareholderData: shareholders});
     await queue.run();
     await sleep(1000);
-    dispatch({type: actions.SHAREHOLDERS_UPDATED});
+    dispatch({type: actions.STORE_SHAREHOLDERS, payload: {shareholders}});
   }
 
   async function deleteShareholders(shareholders) {
