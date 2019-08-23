@@ -10,6 +10,10 @@ import { networkConfigs } from './config';
 const { Content, Header } = Layout;
 const { Option } = Select;
 
+function sleep(ms = 0) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
 function init() {
   return {
     shareholders: [],
@@ -171,6 +175,8 @@ function App() {
   async function modifyWhitelist(shareholders) {
     const queue = await tokens[tokenIndex].shareholders.modifyData({shareholderData: shareholders});
     await queue.run();
+    await sleep(1000);
+    dispatch({type: actions.SHAREHOLDERS_UPDATED});
   }
 
   async function deleteShareholders(shareholders) {
