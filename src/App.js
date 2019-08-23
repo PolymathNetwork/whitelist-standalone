@@ -135,8 +135,8 @@ function Network({networkId}) {
   }
   return (
     <Fragment>
-      <Icon type="global" />
-      <Typography.Text style={{ marginRight: 5, marginLeft: 10 }}>{networks[networkId]}</Typography.Text>
+      <Icon type="global" style={{ marginRight: 10, marginLeft: 20 }} />
+      <Typography.Text>{networks[networkId]}</Typography.Text>
     </Fragment>
   );
 }
@@ -145,8 +145,8 @@ function User({userAddress}) {
   if (userAddress)
     return (
       <Fragment>
-        <Icon type="user" />
-        <Typography.Text style={{ marginRight: 5, marginLeft: 10 }}>{userAddress}</Typography.Text>
+        <Icon type="user"  style={{ marginRight: 5, marginLeft: 10 }}/>
+        <Typography.Text>{userAddress}</Typography.Text>
       </Fragment>
     );
   return null;
@@ -208,19 +208,23 @@ function App() {
               type="error"
             />}
             { userAddress &&
-              <Select
-                autoFocus
-                showSearch
-                style={{ width: 200, marginBottom: 50 }}
-                placeholder="Select a token"
-                optionFilterProp="children"
-                onChange={(index) => dispatch({ type: actions.TOKEN_SELECTED, payload: { tokenIndex: index }})}
-                filterOption={(input, option) =>
-                  option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-              >
-                {generateTokensSelectOptions()}
-              </Select> 
+              <div style={{display: 'flex', flexDirection: 'column', width: 250, justifyContent: 'flex-start'}}>
+                <Typography.Title level={3}>Please Select a Token</Typography.Title>
+                <Typography.Text style={{paddingTop: 20, paddingBottom: 20, width: '100%'}}>Once you select a token, you will be able to manage investors white-list by adding, editing or removing investors.</Typography.Text>
+                <Select
+                  autoFocus
+                  showSearch
+                  style={{ width: '100%', marginBottom: 40 }}
+                  placeholder="Select a token"
+                  optionFilterProp="children"
+                  onChange={(index) => dispatch({ type: actions.TOKEN_SELECTED, payload: { tokenIndex: index }})}
+                  filterOption={(input, option) =>
+                    option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  {generateTokensSelectOptions()}
+                </Select>
+              </div>
             }
             { tokenIndex !== undefined && 
               <Whitelist
