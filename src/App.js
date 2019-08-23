@@ -20,6 +20,7 @@ function init() {
     userAddress: '',
     polyClient: undefined,
     connected: false,
+    forceFetchShareholders: false,
     error: '',
     networkId: 0
   };
@@ -63,7 +64,13 @@ function reducer(state, action) {
       ...state,
       shareholders,
       fetching: false,
-      tip: undefined
+      tip: undefined,
+      forceFetchShareholders: false,
+    }
+  case actions.SHAREHOLDERS_UPDATED:
+    return {
+      ...state,
+      forceFetchShareholders: true,
     }
   case actions.ERROR:
     return { ...state, fetching: false }
@@ -147,24 +154,23 @@ function User({userAddress}) {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, init(), init);
-  const  { shareholders, tokens, tokenIndex, fetching, tip, userAddress, connecting, error, networkId } = state;
+  const  { shareholders, tokens, tokenIndex, fetching, tip, userAddress, connecting, error, networkId, forceFetchShareholders } = state;
  
   useEffect(() => {
     connect(dispatch);
   }, []);
 
   useEffect(() => {
-    if (tokenIndex !== undefined) {
+    if (tokenIndex !== undefined || forceFetchShareholders) {
       fetchShareholders(dispatch, tokens[tokenIndex]);
       // @TODO remove this
       global.token = tokens[tokenIndex];
     }
-  }, [tokens, tokenIndex]);
+  }, [tokens, tokenIndex, forceFetchShareholders]);
 
   async function modifyWhitelist(shareholders) {
     const queue = await tokens[tokenIndex].shareholders.modifyData({shareholderData: shareholders});
     await queue.run();
-    await fetchShareholders(dispatch, tokens[tokenIndex]);
   }
 
   async function deleteShareholders(shareholders) {

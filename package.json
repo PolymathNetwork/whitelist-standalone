@@ -4,7 +4,7 @@
   "private": true,
   "homepage": "https://polymathnetwork.github.io/white-label",
   "dependencies": {
-    "@polymathnetwork/sdk": "2.0.1-beta.23",
+    "@polymathnetwork/sdk": "2.0.1-beta.24",
     "antd": "^3.21.2",
     "gh-pages": "^2.0.1",
     "rc-form-hooks": "^0.0.1-alpha.22",
