@@ -5,6 +5,6 @@ export default {
   RESET: 'reset',
   ERROR: 'error',
   SHAREHOLDERS_FETCHED: 'shareholders_fetched',
-  SHAREHOLDERS_UPDATED: 'shareholders_updated',
+  STORE_SHAREHOLDERS: 'store_shareholders',
   TOKEN_SELECTED: 'token_selected',
 }
