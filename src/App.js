@@ -160,10 +160,16 @@ function App() {
     }
   }, [tokens, tokenIndex]);
 
-  async function modifyWhitelist(shareholders) {
-    const queue = await tokens[tokenIndex].shareholders.modifyData({shareholderData: shareholders});
+  async function modifyWhitelist(data) {
+    const queue = await tokens[tokenIndex].shareholders.modifyData({shareholderData: data});
     await queue.run();
-    dispatch({type: actions.STORE_SHAREHOLDERS, payload: {shareholders}});
+    const seen = new Set();
+    const updatedShareholders = [...data, ...shareholders].filter(s => {
+      const duplicate = seen.has(s.address);
+      seen.add(s.address);
+      return !duplicate;
+    });
+    dispatch({type: actions.STORE_SHAREHOLDERS, payload: {shareholders: updatedShareholders}});
   }
 
   async function deleteShareholders(shareholders) {

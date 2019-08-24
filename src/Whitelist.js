@@ -2,15 +2,11 @@ import React, { useEffect, useReducer } from 'react';
 import useForm from 'rc-form-hooks';
 import moment from 'moment';
 import { utils as web3Utils } from 'web3';
-import { Table, Button, Form, Input, DatePicker, Checkbox, Modal, Typography, Spin, Icon, message } from 'antd';
+import { Button, Form, Input, DatePicker, Modal, Spin, message, Switch } from 'antd';
 
 import ShareholdersTable from './ShareholdersTable';
 
-const {Column} = Table;
 const {Item} = Form;
-const {Text} = Typography;
-
-
 
 const formItemLayout = {
   labelCol: {
@@ -84,8 +80,7 @@ export default ({
   modifyWhitelist, shareholders
 }) => {
   const form = useForm();
-  const { getFieldDecorator, setFieldsValue, resetFields, values, errors, validateFields, setFields } = form;
-  console.log('values', values);
+  const { getFieldDecorator, setFieldsValue, resetFields, validateFields } = form;
   const [state, dispatch] = useReducer(reducer, initialState);
   const { visible, editIndex, ongoingTx } = state;
 
@@ -108,7 +103,6 @@ export default ({
     validateFields(['address', 'canSendAfter', 'canReceiveAfter', 'kycExpiry', 'canBuyFromSto', 'isAccredited'], { force: true })
       .then(async (values) => {
         dispatch({type: 'TX_SEND'})
-        console.log('Submitted', values);
         
         values.canSendAfter = values.canSendAfter.toDate();
         values.canReceiveAfter = values.canReceiveAfter.toDate();
@@ -120,21 +114,18 @@ export default ({
           resetFields();
         }
         catch (error) {
-          console.error('Tx error', error)
           dispatch({ type: 'TX_ERROR', payload: {error: error.message} });
           message.error(error.message);
         }
       });
   };
 
-  let editedRecord = shareholders.filter(shareholder => shareholder.address === editIndex)[0]
-  let defaultValues = editedRecord || defaultShareholderValues;
-  useEffect(() => {
-    // const values = getFieldsValue();
-    // console.log(values);
+  let editedRecord = shareholders.filter(shareholder => shareholder.address === editIndex)[0];
 
-    setFieldsValue(defaultValues);
-  }, [defaultValues, setFieldsValue]);
+  useEffect(() => {
+    let initialValues = editedRecord || defaultShareholderValues;
+    setFieldsValue(initialValues);
+  }, [editedRecord, setFieldsValue]);
   
   return (
     <div style={{display: 'flex', flexDirection: 'column'}}>
@@ -174,50 +165,32 @@ export default ({
                     }
                   }
                 ],
-                // initialValue: defaultValues.address
-              })(
-                <Input disabled={!!editedRecord}/>
-              )}
+              })(<Input disabled={!!editedRecord}/>)}
             </Item>
             <Item name="canSendAfter"  label="Can Send after">
               {getFieldDecorator('canSendAfter', {
                 rules: [{ required: true }],
-                // initialValue: defaultValues.canSendAfter
-              })(
-                <DatePicker />
-              )}
+              })(<DatePicker />)}
             </Item>
             <Item name="canReceiveAfter" label="Can Receive adter">
               {getFieldDecorator('canReceiveAfter', {
                 rules: [{ required: true }],
-                // initialValue: defaultValues.canReceiveAfter
-              })(
-                <DatePicker />
-              )}
+              })(<DatePicker />)}
             </Item>
             <Item name="kycExpiry" label="KYC Expiry">
               {getFieldDecorator('kycExpiry', {
                 rules: [{ required: true }],
-                // initialValue: defaultValues.kycExpiry
-              })(
-                <DatePicker />
-              )}
+              })(<DatePicker />)}
             </Item>
             <Item name="canBuyFromSto" label="Can Buy from STO">
               {getFieldDecorator('canBuyFromSto', {
                 valuePropName: 'checked',
-                // initialValue: defaultValues.canBuyFromSto
-              })(
-                <Checkbox />
-              )}
+              })(<Switch />)}
             </Item>
             <Item name="isAccredited" label="Accredited">
               {getFieldDecorator('isAccredited', {
                 valuePropName: 'checked',
-                // initialValue: defaultValues.isAccredited
-              })(
-                <Checkbox />
-              )}
+              })(<Switch />)}
             </Item>
             <Item>
               <Button onClick={closeForm}>cancel</Button>
