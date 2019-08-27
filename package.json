@@ -1,8 +1,8 @@
 {
-  "name": "white-label",
+  "name": "whitelist-standalone",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://polymathnetwork.github.io/white-label",
+  "homepage": "https://polymathnetwork.github.io/whitelist-standalone",
   "dependencies": {
     "@polymathnetwork/sdk": "2.0.1-beta.24",
     "antd": "^3.21.2",
