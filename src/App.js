@@ -37,20 +37,22 @@ function reducer(state, action) {
   case actions.CONNECTED:
     return {
       ...state,
-      ...action.payload,
+      ...action,
       connecting: false,
       tip: undefined,
       error: undefined,
     }
   case actions.CONNECTION_ERROR:
-    const { error } = action.payload
+    const { error } = action
     return {
       ...state,
       error,
+      tokens: undefined,
       connecting: false,
+      tip: undefined,
     }
   case actions.TOKEN_SELECTED:
-    const { tokenIndex } = action.payload
+    const { tokenIndex } = action
     return {
       ...state,
       tokenIndex,
@@ -64,7 +66,7 @@ function reducer(state, action) {
       tip: undefined,
     }
   case actions.STORE_SHAREHOLDERS:
-    let { shareholders } = action.payload
+    let { shareholders } = action
     shareholders = shareholders.map(shareholder => {
       const ret = Object.assign({}, shareholder, {
         canReceiveAfter: moment(shareholder.canReceiveAfter),
@@ -100,9 +102,7 @@ async function connect(dispatch) {
     if (![-1, 1, 42].includes(networkId)) {
       dispatch({
         type: actions.CONNECTION_ERROR,
-        payload: {
-          error: 'Please switch to either Main or Kovan network'
-        }
+        error: 'Please switch to either Main or Kovan network'
       })
       return
     }
@@ -116,20 +116,16 @@ async function connect(dispatch) {
 
     dispatch({
       type: actions.CONNECTED,
-      payload: {
-        networkId,
-        polyClient,
-        tokens,
-        userAddress: currentWallet,
-      }
+      networkId,
+      polyClient,
+      tokens,
+      userAddress: currentWallet,
     })
   }
   catch(error) {
     dispatch({
       type: actions.CONNECTION_ERROR,
-      payload: {
-        error: error.message
-      }
+      error: error.message
     })
   }
 }
@@ -141,9 +137,7 @@ async function fetchShareholders(dispatch, st) {
   })
   dispatch({
     type: actions.STORE_SHAREHOLDERS,
-    payload: {
-      shareholders
-    }
+    shareholders
   })
 }
 
@@ -221,9 +215,7 @@ function App() {
     })
     dispatch({
       type: actions.STORE_SHAREHOLDERS,
-      payload: {
-        shareholders: updatedShareholders
-      }
+      shareholders: updatedShareholders
     })
   }
 
@@ -299,9 +291,7 @@ function App() {
                   optionFilterProp="children"
                   onChange={(index) => dispatch({
                     type: actions.TOKEN_SELECTED,
-                    payload: {
-                      tokenIndex: index
-                    }
+                    tokenIndex: index
                   })}
                   filterOption={(input, option) =>
                     option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
