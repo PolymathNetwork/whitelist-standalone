@@ -46,7 +46,7 @@ const reducer = (state, action) => {
     }
   case 'CLOSE_FORM':
     return {
-      ...state, 
+      ...state,
       editIndex: '',
       visible: false,
       ongoingTx: false
@@ -76,9 +76,7 @@ const reducer = (state, action) => {
   }
 }
 
-export default ({ 
-  modifyWhitelist, shareholders
-}) => {
+export default ({modifyWhitelist, shareholders}) => {
   const form = useForm();
   const { getFieldDecorator, setFieldsValue, resetFields, validateFields } = form;
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -96,14 +94,16 @@ export default ({
   }
 
   const openForm = (index = '') => {
-    dispatch({ type: 'OPEN_FORM', payload: { editIndex: index } });
+    dispatch({ type: 'OPEN_FORM',
+      payload: { editIndex: index } });
   }
 
   const submitForm = async () => {
-    validateFields(['address', 'canSendAfter', 'canReceiveAfter', 'kycExpiry', 'canBuyFromSto', 'isAccredited'], { force: true })
+    const fields = ['address', 'canSendAfter', 'canReceiveAfter', 'kycExpiry', 'canBuyFromSto', 'isAccredited'];
+    validateFields(fields, { force: true })
       .then(async (values) => {
         dispatch({type: 'TX_SEND'})
-        
+
         values.canSendAfter = values.canSendAfter.toDate();
         values.canReceiveAfter = values.canReceiveAfter.toDate();
         values.kycExpiry = values.kycExpiry.toDate();
@@ -114,7 +114,8 @@ export default ({
           resetFields();
         }
         catch (error) {
-          dispatch({ type: 'TX_ERROR', payload: {error: error.message} });
+          dispatch({ type: 'TX_ERROR',
+            payload: {error: error.message} });
           message.error(error.message);
         }
       });
@@ -126,10 +127,12 @@ export default ({
     let initialValues = editedRecord || defaultShareholderValues;
     setFieldsValue(initialValues);
   }, [editedRecord, setFieldsValue]);
-  
+
   return (
-    <div style={{display: 'flex', flexDirection: 'column'}}>
-      <Button type="primary" style={{marginBottom: 20, alignSelf: 'flex-end'}} onClick={openForm}>Add new</Button>
+    <div style={{display: 'flex',
+      flexDirection: 'column'}}>
+      <Button type="primary" style={{marginBottom: 20,
+        alignSelf: 'flex-end'}} onClick={openForm}>Add new</Button>
       <ShareholdersTable shareholders={shareholders} openForm={openForm} />
       <Modal
         title={editedRecord ? "Edit shareholder" : "Add a new shareholder"}

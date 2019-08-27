@@ -10,9 +10,9 @@ const {Text} = Typography;
 function formatDate(input) {
   return moment(input).format('YYYY-MM-DD');
 }
-  
+
 function formatBool(input) {
-  return input ? 
+  return input ?
     <Fragment><Icon style={{color: '#00AA5E'}} type="check-circle" theme="filled"/><span>   Yes</span></Fragment> :
     <Fragment><Icon style={{color: '#DB2C3E'}} type="close-circle" theme="filled"/><span>   No</span></Fragment>;
 }

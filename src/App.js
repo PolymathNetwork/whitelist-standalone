@@ -28,14 +28,14 @@ function init() {
 function reducer(state, action) {
   switch (action.type) {
   case actions.CONNECTING:
-    return { 
+    return {
       ...state,
-      tip: 'Connecting...',
-      connecting: true,
-      error: undefined
+      connecting: true, //
+      tip: 'Connecting...', // Message to display while connecting.
+      error: undefined // Clear previous error, if any.
     }
   case actions.CONNECTED:
-    return { 
+    return {
       ...state,
       ...action.payload,
       connecting: false,
@@ -51,14 +51,14 @@ function reducer(state, action) {
     }
   case actions.TOKEN_SELECTED:
     const { tokenIndex } = action.payload
-    return { 
+    return {
       ...state,
       tokenIndex,
       tip: 'Loading investors whitelist...',
-      fetching: true 
+      fetching: true
     }
   case actions.SHAREHOLDERS_FETCHED:
-    return { 
+    return {
       ...state,
       fetching: false,
       tip: undefined,
@@ -73,9 +73,15 @@ function reducer(state, action) {
       });
       return ret;
     });
-    return { ...state, shareholders };
+    return {
+      ...state,
+      shareholders
+    };
   case actions.ERROR:
-    return { ...state, fetching: false }
+    return {
+      ...state,
+      fetching: false
+    }
   case actions.RESET:
     return init();
   default:
@@ -84,37 +90,61 @@ function reducer(state, action) {
 }
 
 async function connect(dispatch) {
-  dispatch({type: actions.CONNECTING});
+  dispatch({
+    type: actions.CONNECTING
+  });
 
   try {
     const networkId = await browserUtils.getNetworkId();
     const currentWallet = await browserUtils.getCurrentAddress();
     if (![-1, 1, 42].includes(networkId)) {
-      dispatch({ type: actions.CONNECTION_ERROR, payload: { error: 'Please switch to either Main or Kovan network' }})
+      dispatch({
+        type: actions.CONNECTION_ERROR,
+        payload: {
+          error: 'Please switch to either Main or Kovan network'
+        }
+      })
       return;
     }
 
     const config = networkConfigs[networkId];
     const polyClient = new Polymath();
     await polyClient.connect(config);
-    const tokens = await polyClient.getSecurityTokens({owner: currentWallet});
+    const tokens = await polyClient.getSecurityTokens({
+      owner: currentWallet
+    });
 
-    dispatch({type: actions.CONNECTED, payload: {
-      networkId,
-      polyClient,
-      tokens,
-      userAddress: currentWallet,
-    }});
+    dispatch({
+      type: actions.CONNECTED,
+      payload: {
+        networkId,
+        polyClient,
+        tokens,
+        userAddress: currentWallet,
+      }
+    });
   }
   catch(error) {
-    dispatch({ type: actions.CONNECTION_ERROR, payload: { error: error.message }})
+    dispatch({
+      type: actions.CONNECTION_ERROR,
+      payload: {
+        error: error.message
+      }
+    })
   }
 }
 
 async function fetchShareholders(dispatch, st) {
   let shareholders = await st.shareholders.getShareholders();
-  dispatch({ type: actions.SHAREHOLDERS_FETCHED });
-  dispatch({ type: actions.STORE_SHAREHOLDERS, payload: { shareholders }});
+  dispatch({
+    type: actions.SHAREHOLDERS_FETCHED
+  });
+  dispatch({
+    type: actions.STORE_SHAREHOLDERS,
+    payload: {
+      shareholders
+    }
+  });
 }
 
 function Network({networkId}) {
@@ -126,7 +156,10 @@ function Network({networkId}) {
   }
   return (
     <Fragment>
-      <Icon type="global" style={{ marginRight: 10, marginLeft: 20 }} />
+      <Icon type="global" style={{
+        marginRight: 10,
+        marginLeft: 20
+      }} />
       <Typography.Text>{networks[networkId]}</Typography.Text>
     </Fragment>
   );
@@ -136,7 +169,10 @@ function User({userAddress}) {
   if (userAddress)
     return (
       <Fragment>
-        <Icon type="user"  style={{ marginRight: 5, marginLeft: 10 }}/>
+        <Icon type="user"  style={{
+          marginRight: 5,
+          marginLeft: 10
+        }}/>
         <Typography.Text>{userAddress}</Typography.Text>
       </Fragment>
     );
@@ -145,31 +181,51 @@ function User({userAddress}) {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, init(), init);
-  const  { shareholders, tokens, tokenIndex, fetching, tip, userAddress, connecting, error, networkId } = state;
- 
-  useEffect(() => {
-    connect(dispatch);
-  }, []);
+  const  {
+    shareholders,
+    tokens,
+    tokenIndex,
+    fetching,
+    tip,
+    userAddress,
+    connecting,
+    error,
+    networkId,
+    connected
+  } = state;
 
   useEffect(() => {
-    if (tokenIndex !== undefined 
+    connect(dispatch);
+  }, [connected]);
+
+  useEffect(() => {
+    if (tokenIndex !== undefined
     ) {
       fetchShareholders(dispatch, tokens[tokenIndex]);
       // @TODO remove this
       global.token = tokens[tokenIndex];
     }
-  }, [tokens, tokenIndex]);
+  }, [tokens,
+    tokenIndex]);
 
   async function modifyWhitelist(data) {
-    const queue = await tokens[tokenIndex].shareholders.modifyData({shareholderData: data});
+    const queue = await tokens[tokenIndex].shareholders.modifyData({
+      shareholderData: data
+    });
     await queue.run();
     const seen = new Set();
-    const updatedShareholders = [...data, ...shareholders].filter(s => {
+    const updatedShareholders = [...data,
+      ...shareholders].filter(s => {
       const duplicate = seen.has(s.address);
       seen.add(s.address);
       return !duplicate;
     });
-    dispatch({type: actions.STORE_SHAREHOLDERS, payload: {shareholders: updatedShareholders}});
+    dispatch({
+      type: actions.STORE_SHAREHOLDERS,
+      payload: {
+        shareholders: updatedShareholders
+      }
+    });
   }
 
   async function deleteShareholders(shareholders) {
@@ -182,13 +238,15 @@ function App() {
       canBuyFromSto: 0
     }));
 
-    const queue = await tokens[tokenIndex].shareholders.modifyData({shareholderData: shareholders});
+    const queue = await tokens[tokenIndex].shareholders.modifyData({
+      shareholderData: shareholders
+    });
     await queue.run();
     await fetchShareholders(dispatch, tokens[tokenIndex]);
   }
 
   function generateTokensSelectOptions() {
-    const options = !tokens ? [] : tokens.map((token, i) => 
+    const options = !tokens ? [] : tokens.map((token, i) =>
       <Option value={i} key={i}>{token.symbol}</Option>)
     return options
   }
@@ -197,26 +255,55 @@ function App() {
     <div className="App">
       <Spin spinning={fetching || connecting} tip={tip} size="large">
         <Layout>
-          <Header style={{backgroundColor: 'white', display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
+          <Header style={{
+            backgroundColor: 'white',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            alignItems: 'center'
+          }}>
             <Network networkId={networkId} />
             <User userAddress={userAddress} />
           </Header>
-          <Content style={{ padding: 50, backgroundColor: '#FAFDFF' }}>
+          <Content style={{
+            padding: 50,
+            backgroundColor: '#FAFDFF'
+          }}>
             { error && <Alert
               message={error}
               type="error"
             />}
             { userAddress &&
-              <div style={{display: 'flex', flexDirection: 'column', width: 250, justifyContent: 'flex-start'}}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: 250,
+                justifyContent: 'flex-start'
+              }}>
                 <Typography.Title level={3}>Please Select a Token</Typography.Title>
-                <Typography.Text style={{paddingTop: 20, paddingBottom: 20, width: '100%'}}>Once you select a token, you will be able to manage investors white-list by adding, editing or removing investors.</Typography.Text>
+                <Typography.Text style={{
+                  paddingTop: 20,
+                  paddingBottom: 20,
+                  width: '100%'
+                }}>
+                  Once you select a token, you will be able to manage investors white-list by adding,
+                  editing or removing investors.
+                </Typography.Text>
                 <Select
                   autoFocus
                   showSearch
-                  style={{ width: '100%', marginBottom: 40 }}
+                  style={{
+                    width: '100%',
+                    marginBottom: 40
+                  }}
                   placeholder="Select a token"
                   optionFilterProp="children"
-                  onChange={(index) => dispatch({ type: actions.TOKEN_SELECTED, payload: { tokenIndex: index }})}
+                  onChange={(index) => dispatch({
+                    type: actions.TOKEN_SELECTED,
+                    payload: {
+                      tokenIndex: index
+                    }
+                  })}
                   filterOption={(input, option) =>
                     option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
@@ -225,7 +312,7 @@ function App() {
                 </Select>
               </div>
             }
-            { tokenIndex !== undefined && 
+            { tokenIndex !== undefined &&
               <Whitelist
                 modifyWhitelist={modifyWhitelist}
                 deleteShareholders={deleteShareholders}
