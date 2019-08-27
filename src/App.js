@@ -14,7 +14,7 @@ const initialState = {
   shareholders: [],
   tokens: undefined,
   editingShareholder: false,
-  tokenIndex: undefined,
+  selectedToken: undefined,
   fetching: false,
   userAddress: '',
   polyClient: undefined,
@@ -70,10 +70,10 @@ function reducer(state, action) {
       tip: ''
     }
   case actions.TOKEN_SELECTED:
-    const { tokenIndex } = action
+    const { selectedToken } = action
     return {
       ...state,
-      tokenIndex,
+      selectedToken,
       tip: 'Loading shareholders...',
       fetching: true
     }
@@ -149,7 +149,7 @@ function App() {
   const  {
     shareholders,
     tokens,
-    tokenIndex,
+    selectedToken,
     fetching,
     tip,
     userAddress,
@@ -162,8 +162,10 @@ function App() {
     tokenSelectOpts
   } = state
 
+  // a. Connect to Polymath ecosystem
   useEffect(() => {
     async function connect(dispatch) {
+      // Start the spinner!
       dispatch({
         type: actions.CONNECTING
       })
@@ -202,6 +204,7 @@ function App() {
     }
   }, [connected])
 
+  // b. Fetch tokens
   useEffect(() => {
     async function fetchTokens(dispatch, polyClient, userAddress) {
       dispatch({type: actions.FETCHING_TOKENS})
@@ -216,6 +219,7 @@ function App() {
     }
   }, [userAddress, polyClient, tokens])
 
+  // c. Fetch tokenholders
   useEffect(() => {
     async function fetchShareholders(dispatch, st) {
       let shareholders = await st.shareholders.getShareholders()
@@ -224,13 +228,13 @@ function App() {
         shareholders
       })
     }
-    if (tokenIndex !== undefined || reloadShareholders) {
-      fetchShareholders(dispatch, tokens[tokenIndex])
+    if ( reloadShareholders === true | selectedToken !== undefined ) {
+      fetchShareholders(dispatch, tokens[selectedToken])
     }
-  }, [tokens, tokenIndex, reloadShareholders])
+  }, [tokens, selectedToken, reloadShareholders])
 
   async function modifyWhitelist(data) {
-    const queue = await tokens[tokenIndex].shareholders.modifyData({
+    const queue = await tokens[selectedToken].shareholders.modifyData({
       shareholderData: data
     })
     await queue.run()
@@ -286,7 +290,7 @@ function App() {
                   optionFilterProp="children"
                   onChange={(index) => dispatch({
                     type: actions.TOKEN_SELECTED,
-                    tokenIndex: index
+                    selectedToken: index
                   })}
                   filterOption={(input, option) =>
                     option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -296,7 +300,7 @@ function App() {
                 </Select>
               </div>
             }
-            { tokenIndex !== undefined &&
+            { selectedToken !== undefined &&
               <Whitelist
                 modifyWhitelist={modifyWhitelist}
                 shareholders={shareholders}

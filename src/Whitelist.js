@@ -135,7 +135,7 @@ export default ({modifyWhitelist, shareholders}) => {
         alignSelf: 'flex-end'}} onClick={openForm}>Add new</Button>
       <ShareholdersTable shareholders={shareholders} openForm={openForm} />
       <Modal
-        title={editedRecord ? "Edit shareholder" : "Add a new shareholder"}
+        title={editedRecord ? "Edit tokenholder" : "Add a new tokenholder"}
         okText="Save"
         closable={false}
         visible={visible}
@@ -160,7 +160,7 @@ export default ({modifyWhitelist, shareholders}) => {
                   {
                     validator: (rule, value, callback) => {
                       if (!editedRecord && shareholderExists(value)) {
-                        callback('Shareholder is already present in the whitelist')
+                        callback('Tokenholder is already present in the whitelist')
                         return
                       }
                       callback()
@@ -175,7 +175,7 @@ export default ({modifyWhitelist, shareholders}) => {
                 rules: [{ required: true }],
               })(<DatePicker />)}
             </Item>
-            <Item name="canReceiveAfter" label="Can Receive adter">
+            <Item name="canReceiveAfter" label="Can Receive After">
               {getFieldDecorator('canReceiveAfter', {
                 rules: [{ required: true }],
               })(<DatePicker />)}
