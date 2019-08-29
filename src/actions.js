@@ -8,6 +8,6 @@ export default {
   FETCHING_TOKENS: 'fetching_tokens',
   SHAREHOLDERS_FETCHED: 'shareholders_fetched',
   STORE_SHAREHOLDERS: 'store_shareholders',
-  RELOAD_SHAREHOLDERS: 'relaod_shareholders',
+  RELOAD_SHAREHOLDERS: 'reload_shareholders',
   TOKEN_SELECTED: 'token_selected',
 }

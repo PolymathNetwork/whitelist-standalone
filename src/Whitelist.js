@@ -94,8 +94,7 @@ export default ({modifyWhitelist, shareholders}) => {
   }
 
   const openForm = (index = '') => {
-    dispatch({ type: 'OPEN_FORM',
-      payload: { editIndex: index } })
+    dispatch({ type: 'OPEN_FORM', payload: { editIndex: index } })
   }
 
   const submitForm = async () => {
@@ -135,7 +134,7 @@ export default ({modifyWhitelist, shareholders}) => {
         alignSelf: 'flex-end'}} onClick={openForm}>Add new</Button>
       <ShareholdersTable shareholders={shareholders} openForm={openForm} />
       <Modal
-        title={editedRecord ? "Edit tokenholder" : "Add a new tokenholder"}
+        title={editedRecord ? 'Edit tokenholder' : 'Add a new tokenholder'}
         okText="Save"
         closable={false}
         visible={visible}

@@ -5,4 +5,4 @@ export const networkConfigs = {
   42: {
     polymathRegistryAddress: '0x5b215a7d39ee305ad28da29bf2f0425c6c2a00b3'
   },
-};
+}

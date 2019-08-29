@@ -108,7 +108,7 @@ function reducer(state, action) {
       fetching: false
     }
   default:
-    throw new Error(`Unrecognised action "${action.type}"`)
+    throw new Error(`Unrecognized action "${action.type}"`)
   }
 }
 
@@ -162,15 +162,16 @@ function App() {
     tokenSelectOpts
   } = state
 
-  // a. Connect to Polymath ecosystem
+  // A. Connect to Polymath ecosystem
   useEffect(() => {
     async function connect(dispatch) {
-      // Start the spinner!
+      // A1. Start the spinner!
       dispatch({
         type: actions.CONNECTING
       })
 
       try {
+        // A2. Get the current network and make sure it's either Mainnet or Kovan.
         const networkId = await browserUtils.getNetworkId()
         const currentWallet = await browserUtils.getCurrentAddress()
         if (![-1, 1, 42].includes(networkId)) {
@@ -181,10 +182,11 @@ function App() {
           return
         }
 
+        // A3. Instantiate and configure the SDK. Then, dispatch CONNECTED action with
+        // the necessary state variables. This should also stop the snipper.
         const config = networkConfigs[networkId]
         const polyClient = new Polymath()
         await polyClient.connect(config)
-
         dispatch({
           type: actions.CONNECTED,
           networkId,
@@ -193,12 +195,15 @@ function App() {
         })
       }
       catch(error) {
+        // A4. Dispatch ERROR action in order to display any errors thrown in the process.
         dispatch({
           type: actions.CONNECTION_ERROR,
           error: error.message
         })
       }
     }
+
+    // Attempt to connect but only if we haven't connected yet.
     if (!connected) {
       connect(dispatch)
     }
