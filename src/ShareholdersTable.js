@@ -17,7 +17,7 @@ function formatBool(input) {
     <Fragment><Icon style={{color: '#DB2C3E'}} type="close-circle" theme="filled"/><span>   No</span></Fragment>
 }
 
-export default ({shareholders, openForm}) => {
+export default ({shareholders, openForm, removeShareholders}) => {
   return (
     <Table dataSource={shareholders} rowKey="address">
       <Column
@@ -62,9 +62,9 @@ export default ({shareholders, openForm}) => {
             <Button onClick={() => openForm(record.address)}>
               <Icon type="edit" theme="filled" />
             </Button>
-            {/* <Button onClick={() => deleteShareholders([record])}>
-                  <Icon type="delete" theme="filled" />
-              </Button> */}
+            <Button onClick={() => removeShareholders([record.address])}>
+              <Icon type="delete" theme="filled" />
+            </Button>
           </Fragment>
         )
       }}/>

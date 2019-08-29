@@ -74,14 +74,14 @@ function reducer(state, action) {
     return {
       ...state,
       selectedToken,
-      tip: 'Loading shareholders...',
+      tip: 'Loading tokenholders...',
       fetching: true
     }
   case actions.RELOAD_SHAREHOLDERS:
     return {
       ...state,
       fetching: true,
-      tip: 'Reloading shareholders...',
+      tip: 'Reloading tokenholders...',
       reloadShareholders: true,
     }
   case actions.SHAREHOLDERS_FETCHED:
@@ -246,6 +246,15 @@ function App() {
     dispatch({type:actions.RELOAD_SHAREHOLDERS})
   }
 
+  async function removeShareholders(addresses) {
+    console.log('App.removeShareholders', addresses)
+    const queue = await tokens[selectedToken].shareholders.revokeKyc({
+      shareholderAddresses: addresses
+    })
+    await queue.run()
+    dispatch({type:actions.RELOAD_SHAREHOLDERS})
+  }
+
   return (
     <div className="App">
       <Spin spinning={fetching || connecting} tip={tip} size="large">
@@ -308,6 +317,7 @@ function App() {
             { selectedToken !== undefined &&
               <Whitelist
                 modifyWhitelist={modifyWhitelist}
+                removeShareholders={removeShareholders}
                 shareholders={shareholders}
               />
             }

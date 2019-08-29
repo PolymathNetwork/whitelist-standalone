@@ -76,7 +76,7 @@ const reducer = (state, action) => {
   }
 }
 
-export default ({modifyWhitelist, shareholders}) => {
+export default ({modifyWhitelist, shareholders, removeShareholders}) => {
   const form = useForm()
   const { getFieldDecorator, setFieldsValue, resetFields, validateFields } = form
   const [state, dispatch] = useReducer(reducer, initialState)
@@ -132,7 +132,7 @@ export default ({modifyWhitelist, shareholders}) => {
       flexDirection: 'column'}}>
       <Button type="primary" style={{marginBottom: 20,
         alignSelf: 'flex-end'}} onClick={openForm}>Add new</Button>
-      <ShareholdersTable shareholders={shareholders} openForm={openForm} />
+      <ShareholdersTable shareholders={shareholders} removeShareholders={removeShareholders} openForm={openForm} />
       <Modal
         title={editedRecord ? 'Edit tokenholder' : 'Add a new tokenholder'}
         okText="Save"
