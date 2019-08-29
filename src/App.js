@@ -3,7 +3,9 @@ import { Layout, Select, Spin, Alert, Icon, Typography } from 'antd'
 import { Polymath, browserUtils } from '@polymathnetwork/sdk'
 import moment from 'moment'
 
+import DispatchContext from '.'
 import actions from './actions'
+import TokenSelector from './TokenSelector'
 import Whitelist from './Whitelist'
 import { networkConfigs } from './config'
 
@@ -224,7 +226,7 @@ function App() {
     }
   }, [userAddress, polyClient, tokens])
 
-  // c. Fetch tokenholders
+  // c. Fetch share holders.
   useEffect(() => {
     async function fetchShareholders(dispatch, st) {
       let shareholders = await st.shareholders.getShareholders()
@@ -248,72 +250,41 @@ function App() {
 
   return (
     <div className="App">
-      <Spin spinning={fetching || connecting} tip={tip} size="large">
-        <Layout>
-          <Header style={{
-            backgroundColor: 'white',
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            alignItems: 'center'
-          }}>
-            <Network networkId={networkId} />
-            <User userAddress={userAddress} />
-          </Header>
-          <Content style={{
-            padding: 50,
-            backgroundColor: '#FAFDFF'
-          }}>
-            { error && <Alert
-              message={error}
-              type="error"
-            />}
-            { userAddress &&
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                width: 250,
-                justifyContent: 'flex-start'
-              }}>
-                <Typography.Title level={3}>Please Select a Token</Typography.Title>
-                <Typography.Text style={{
-                  paddingTop: 20,
-                  paddingBottom: 20,
-                  width: '100%'
-                }}>
-                  Once you select a token, you will be able to manage token holders white-list by adding,
-                  editing or removing token holders.
-                </Typography.Text>
-                <Select
-                  autoFocus
-                  showSearch
-                  style={{
-                    width: '100%',
-                    marginBottom: 40
-                  }}
-                  placeholder="Select a token"
-                  optionFilterProp="children"
-                  onChange={(index) => dispatch({
-                    type: actions.TOKEN_SELECTED,
-                    selectedToken: index
-                  })}
-                  filterOption={(input, option) =>
-                    option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                >
-                  {tokenSelectOpts}
-                </Select>
-              </div>
-            }
-            { selectedToken !== undefined &&
-              <Whitelist
-                modifyWhitelist={modifyWhitelist}
-                shareholders={shareholders}
-              />
-            }
-          </Content>
-        </Layout>
-      </Spin>
+      <DispatchContext.Provider value={dispatch}>
+        <Spin spinning={fetching || connecting} tip={tip} size="large">
+          <Layout>
+            <Header style={{
+              backgroundColor: 'white',
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              alignItems: 'center'
+            }}>
+              <Network networkId={networkId} />
+              <User userAddress={userAddress} />
+            </Header>
+            <Content style={{
+              padding: 50,
+              backgroundColor: '#FAFDFF'
+            }}>
+              { error &&
+                <Alert
+                  message={error}
+                  type="error"/>
+              }
+              { userAddress &&
+                <TokenSelector
+                  tokenSelectOpts={tokenSelectOpts}/>
+              }
+              { selectedToken !== undefined &&
+                <Whitelist
+                  modifyWhitelist={modifyWhitelist}
+                  shareholders={shareholders}/>
+              }
+            </Content>
+          </Layout>
+        </Spin>
+      </DispatchContext.Provider>
     </div>
   )
 }
