@@ -1311,10 +1311,10 @@
   resolved "https://registry.yarnpkg.com/@polymathnetwork/contract-artifacts/-/contract-artifacts-3.0.0-beta.5.tgz#b3bf6c7f40eb036402237d08d98f4f11cc230c87"
   integrity sha512-YS6VXPqEgv69SEUJHArNLrN93psfPZSRFBxX0TnLPiNC/9wsvdDUXhE0a3RhokEMjYBmD4Yi+CDB71Faxg3jpQ==
 
-"@polymathnetwork/contract-wrappers@2.0.0-beta.32":
-  version "2.0.0-beta.32"
-  resolved "https://registry.yarnpkg.com/@polymathnetwork/contract-wrappers/-/contract-wrappers-2.0.0-beta.32.tgz#0a7ec1570e538702c551e0ad5df6b6689277e717"
-  integrity sha512-gqKNfna7RgMH7DOrfxnWW1GwspAnm9tIRsjpAZ3CLP/02PmYdK8pZP2XN19SdhmQ6JKWAGA3zi4cqfT5dw4a4w==
+"@polymathnetwork/contract-wrappers@2.0.0-beta.35":
+  version "2.0.0-beta.35"
+  resolved "https://registry.yarnpkg.com/@polymathnetwork/contract-wrappers/-/contract-wrappers-2.0.0-beta.35.tgz#fe5e8604e86570099e39476f746ce48233921d19"
+  integrity sha512-OgoSjqmnWM8F6OUFzWLyFvGrWtizZogewTL3uwRLkIBoXePrj14esm/3O+Y3Kho2ha4+YuOjoLpdsy0DmTqWtw==
   dependencies:
     "@0x/assert" "^2.1.0"
     "@0x/json-schemas" "^3.0.11"
@@ -1331,15 +1331,15 @@
     semver "^6.3.0"
     uuid "^3.3.2"
 
-"@polymathnetwork/sdk@2.0.1-beta.24":
-  version "2.0.1-beta.24"
-  resolved "https://registry.yarnpkg.com/@polymathnetwork/sdk/-/sdk-2.0.1-beta.24.tgz#f17776126dc0f322a7281b5ea114b48e4d4c5f48"
-  integrity sha512-bi8ek+EPiJ0uPvQnM6ZDlQHu1zDLTdx1FsIkOb7FOAYiY/PicV9LRGvkJ9OiqiggjluQx/ZWGY+dhKPbh+TqRw==
+"@polymathnetwork/sdk@2.0.1-beta.28":
+  version "2.0.1-beta.28"
+  resolved "https://registry.yarnpkg.com/@polymathnetwork/sdk/-/sdk-2.0.1-beta.28.tgz#05db77d4c5b69ad2f2f5f8b202e4e5b482713cfd"
+  integrity sha512-QMb0i3RZdNi5sjqEnTVPmioBuoBGB3UZnc99e7PENcR3WioR5R1OjpymLAuQgMoxaOcTL4lCZ1IBfRjzaU7Xpg==
   dependencies:
     "@0x/subproviders" "^3.0.2"
     "@babel/polyfill" "^7.0.0"
     "@babel/runtime" "^7.2.0"
-    "@polymathnetwork/contract-wrappers" "2.0.0-beta.32"
+    "@polymathnetwork/contract-wrappers" "2.0.0-beta.35"
     bluebird "^3.5.5"
     ethereum-address "^0.0.4"
     json-stable-stringify "^1.0.1"
