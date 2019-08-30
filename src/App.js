@@ -104,9 +104,23 @@ function reducer(state, action) {
       tip: '',
       reloadShareholders: false,
     }
-  case a.ERROR:
+  case a.DELETING_SHAREHOLDER:
     return {
       ...state,
+      fetching: true,
+      tip: 'Deleting token holder'
+    }
+  case a.SHAREHOLDER_DELETED:
+    return {
+      ...state,
+      fetching: false,
+      tip: ''
+    }
+  case a.ERROR:
+    const { error: error2 } = action
+    return {
+      ...state,
+      error: error2,
       fetching: false
     }
   default:
@@ -245,10 +259,17 @@ function App() {
 
   async function removeShareholders(addresses) {
     console.log('App.removeShareholders', addresses)
-    const queue = await tokens[selectedToken].shareholders.revokeKyc({
-      shareholderAddresses: addresses
-    })
-    await queue.run()
+    dispatch({type: a.DELETING_SHAREHOLDER})
+    try {
+      const queue = await tokens[selectedToken].shareholders.revokeKyc({
+        shareholderAddresses: addresses
+      })
+      await queue.run()
+      dispatch({type: a.SHAREHOLDER_DELETED})
+    }
+    catch (error) {
+
+    }
     dispatch({type:a.RELOAD_SHAREHOLDERS})
   }
 

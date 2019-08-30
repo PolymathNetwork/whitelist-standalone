@@ -10,4 +10,6 @@ export default {
   STORE_SHAREHOLDERS: 'store_shareholders',
   RELOAD_SHAREHOLDERS: 'reload_shareholders',
   TOKEN_SELECTED: 'token_selected',
+  DELETING_SHAREHOLDER: 'deleting_shareholder',
+  SHAREHOLDER_DELETED: 'shareholder_deleted'
 }
