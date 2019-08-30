@@ -3,6 +3,7 @@ import { Select, Typography } from 'antd'
 
 import actions from './actions'
 import DispatchContext from '.'
+const { Text, Title } = Typography
 
 export default function TokenSelector({tokenSelectOpts}) {
   const dispatch = useContext(DispatchContext)
@@ -12,15 +13,15 @@ export default function TokenSelector({tokenSelectOpts}) {
     width: 250,
     justifyContent: 'flex-start'
   }}>
-    <Typography.Title level={3}>Please Select a Token</Typography.Title>
-    <Typography.Text style={{
+    <Title level={3}>Please Select a Token</Title>
+    <Text style={{
       paddingTop: 20,
       paddingBottom: 20,
       width: '100%'
     }}>
       Once you select a token, you will be able to manage token holders white-list by adding,
       editing or removing token holders.
-    </Typography.Text>
+    </Text>
     <Select
       autoFocus
       showSearch

@@ -19,7 +19,6 @@ const formItemLayout = {
   },
 }
 
-
 const defaultShareholderValues = {
   address: '',
   canSendAfter: moment().add(1, 'hour'),
