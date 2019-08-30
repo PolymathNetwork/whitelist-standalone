@@ -3,12 +3,15 @@ import { Layout, Select, Spin, Alert, Icon, Typography } from 'antd'
 import { Polymath, browserUtils } from '@polymathnetwork/sdk'
 import moment from 'moment'
 
-import actions from './actions'
+import DispatchContext from '.'
+import a from './actions'
+import TokenSelector from './TokenSelector'
 import Whitelist from './Whitelist'
 import { networkConfigs } from './config'
 
 const { Content, Header } = Layout
 const { Option } = Select
+const { Text } = Typography
 
 const initialState = {
   shareholders: [],
@@ -27,14 +30,14 @@ const initialState = {
 function reducer(state, action) {
   console.log('ACTION', action)
   switch (action.type) {
-  case actions.CONNECTING:
+  case a.CONNECTING:
     return {
       ...state,
       connecting: true, // Spinner will keep on spinning until connection has established.
       tip: 'Connecting...', // Message to display while connecting.
       error: undefined // Clear previous error, if any.
     }
-  case actions.CONNECTED:
+  case a.CONNECTED:
     const { polyClient, networkId, userAddress } = action
     return {
       ...state,
@@ -45,7 +48,7 @@ function reducer(state, action) {
       tip: '',
       error: undefined,
     }
-  case actions.CONNECTION_ERROR:
+  case a.CONNECTION_ERROR:
     const { error } = action
     return {
       ...state,
@@ -54,13 +57,13 @@ function reducer(state, action) {
       connecting: false,
       tip: '',
     }
-  case actions.FETCHING_TOKENS:
+  case a.FETCHING_TOKENS:
     return {
       ...state,
       fetching: true,
       tip: 'Fetching tokens'
     }
-  case actions.FETCHED_TOKENS:
+  case a.FETCHED_TOKENS:
     const { tokens, tokenSelectOpts } = action
     return {
       ...state,
@@ -69,7 +72,7 @@ function reducer(state, action) {
       fetching: false,
       tip: ''
     }
-  case actions.TOKEN_SELECTED:
+  case a.TOKEN_SELECTED:
     const { selectedToken } = action
     return {
       ...state,
@@ -77,14 +80,14 @@ function reducer(state, action) {
       tip: 'Loading tokenholders...',
       fetching: true
     }
-  case actions.RELOAD_SHAREHOLDERS:
+  case a.RELOAD_SHAREHOLDERS:
     return {
       ...state,
       fetching: true,
       tip: 'Reloading tokenholders...',
       reloadShareholders: true,
     }
-  case actions.SHAREHOLDERS_FETCHED:
+  case a.SHAREHOLDERS_FETCHED:
     let { shareholders } = action
     shareholders = shareholders.map(shareholder => {
       const ret = Object.assign({}, shareholder, {
@@ -101,8 +104,7 @@ function reducer(state, action) {
       tip: '',
       reloadShareholders: false,
     }
-
-  case actions.ERROR:
+  case a.ERROR:
     return {
       ...state,
       fetching: false
@@ -125,7 +127,7 @@ function Network({networkId}) {
         marginRight: 10,
         marginLeft: 20
       }} />
-      <Typography.Text>{networks[networkId]}</Typography.Text>
+      <Text>{networks[networkId]}</Text>
     </Fragment>
   )
 }
@@ -138,7 +140,7 @@ function User({userAddress}) {
           marginRight: 5,
           marginLeft: 10
         }}/>
-        <Typography.Text>{userAddress}</Typography.Text>
+        <Text>{userAddress}</Text>
       </Fragment>
     )
   return null
@@ -166,9 +168,7 @@ function App() {
   useEffect(() => {
     async function connect(dispatch) {
       // A1. Start the spinner!
-      dispatch({
-        type: actions.CONNECTING
-      })
+      dispatch({ type: a.CONNECTING })
 
       try {
         // A2. Get the current network and make sure it's either Mainnet or Kovan.
@@ -176,7 +176,7 @@ function App() {
         const currentWallet = await browserUtils.getCurrentAddress()
         if (![-1, 1, 42].includes(networkId)) {
           dispatch({
-            type: actions.CONNECTION_ERROR,
+            type: a.CONNECTION_ERROR,
             error: 'Please switch to either Main or Kovan network'
           })
           return
@@ -188,7 +188,7 @@ function App() {
         const polyClient = new Polymath()
         await polyClient.connect(config)
         dispatch({
-          type: actions.CONNECTED,
+          type: a.CONNECTED,
           networkId,
           polyClient,
           userAddress: currentWallet,
@@ -197,7 +197,7 @@ function App() {
       catch(error) {
         // A4. Dispatch ERROR action in order to display any errors thrown in the process.
         dispatch({
-          type: actions.CONNECTION_ERROR,
+          type: a.CONNECTION_ERROR,
           error: error.message
         })
       }
@@ -212,26 +212,23 @@ function App() {
   // b. Fetch tokens
   useEffect(() => {
     async function fetchTokens(dispatch, polyClient, userAddress) {
-      dispatch({type: actions.FETCHING_TOKENS})
+      dispatch({type: a.FETCHING_TOKENS})
       const tokens = await polyClient.getSecurityTokens({ userAddress })
       const tokenSelectOpts = tokens.map((token, i) =>
         <Option value={i} key={i}>{token.symbol}</Option>)
 
-      dispatch({type: actions.FETCHED_TOKENS, tokens, tokenSelectOpts})
+      dispatch({type: a.FETCHED_TOKENS, tokens, tokenSelectOpts})
     }
     if (polyClient && userAddress && !tokens) {
       fetchTokens(dispatch, polyClient, userAddress)
     }
   }, [userAddress, polyClient, tokens])
 
-  // c. Fetch tokenholders
+  // c. Fetch share holders.
   useEffect(() => {
     async function fetchShareholders(dispatch, st) {
       let shareholders = await st.shareholders.getShareholders()
-      dispatch({
-        type: actions.SHAREHOLDERS_FETCHED,
-        shareholders
-      })
+      dispatch({ type: a.SHAREHOLDERS_FETCHED, shareholders })
     }
     if ( reloadShareholders === true | selectedToken !== undefined ) {
       fetchShareholders(dispatch, tokens[selectedToken])
@@ -243,7 +240,7 @@ function App() {
       shareholderData: data
     })
     await queue.run()
-    dispatch({type:actions.RELOAD_SHAREHOLDERS})
+    dispatch({type:a.RELOAD_SHAREHOLDERS})
   }
 
   async function removeShareholders(addresses) {
@@ -252,78 +249,47 @@ function App() {
       shareholderAddresses: addresses
     })
     await queue.run()
-    dispatch({type:actions.RELOAD_SHAREHOLDERS})
+    dispatch({type:a.RELOAD_SHAREHOLDERS})
   }
 
   return (
     <div className="App">
-      <Spin spinning={fetching || connecting} tip={tip} size="large">
-        <Layout>
-          <Header style={{
-            backgroundColor: 'white',
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            alignItems: 'center'
-          }}>
-            <Network networkId={networkId} />
-            <User userAddress={userAddress} />
-          </Header>
-          <Content style={{
-            padding: 50,
-            backgroundColor: '#FAFDFF'
-          }}>
-            { error && <Alert
-              message={error}
-              type="error"
-            />}
-            { userAddress &&
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                width: 250,
-                justifyContent: 'flex-start'
-              }}>
-                <Typography.Title level={3}>Please Select a Token</Typography.Title>
-                <Typography.Text style={{
-                  paddingTop: 20,
-                  paddingBottom: 20,
-                  width: '100%'
-                }}>
-                  Once you select a token, you will be able to manage token holders white-list by adding,
-                  editing or removing token holders.
-                </Typography.Text>
-                <Select
-                  autoFocus
-                  showSearch
-                  style={{
-                    width: '100%',
-                    marginBottom: 40
-                  }}
-                  placeholder="Select a token"
-                  optionFilterProp="children"
-                  onChange={(index) => dispatch({
-                    type: actions.TOKEN_SELECTED,
-                    selectedToken: index
-                  })}
-                  filterOption={(input, option) =>
-                    option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                >
-                  {tokenSelectOpts}
-                </Select>
-              </div>
-            }
-            { selectedToken !== undefined &&
-              <Whitelist
-                modifyWhitelist={modifyWhitelist}
-                removeShareholders={removeShareholders}
-                shareholders={shareholders}
-              />
-            }
-          </Content>
-        </Layout>
-      </Spin>
+      <DispatchContext.Provider value={dispatch}>
+        <Spin spinning={fetching || connecting} tip={tip} size="large">
+          <Layout>
+            <Header style={{
+              backgroundColor: 'white',
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              alignItems: 'center'
+            }}>
+              <Network networkId={networkId} />
+              <User userAddress={userAddress} />
+            </Header>
+            <Content style={{
+              padding: 50,
+              backgroundColor: '#FAFDFF'
+            }}>
+              { error &&
+                <Alert
+                  message={error}
+                  type="error"/>
+              }
+              { userAddress &&
+                <TokenSelector
+                  tokenSelectOpts={tokenSelectOpts}/>
+              }
+              { selectedToken !== undefined &&
+                <Whitelist
+                  modifyWhitelist={modifyWhitelist}
+                  removeShareholders={removeShareholders}
+                  shareholders={shareholders}/>
+              }
+            </Content>
+          </Layout>
+        </Spin>
+      </DispatchContext.Provider>
     </div>
   )
 }
