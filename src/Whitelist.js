@@ -133,7 +133,7 @@ export default ({modifyWhitelist, shareholders, removeShareholders}) => {
         alignSelf: 'flex-end'}} onClick={openForm}>Add new</Button>
       <ShareholdersTable shareholders={shareholders} removeShareholders={removeShareholders} openForm={openForm} />
       <Modal
-        title={editedRecord ? 'Edit tokenholder' : 'Add a new tokenholder'}
+        title={editedRecord ? 'Edit token holder' : 'Add a new token holder'}
         okText="Save"
         closable={false}
         visible={visible}

@@ -13,8 +13,8 @@ function formatDate(input) {
 
 function formatBool(input) {
   return input ?
-    <Fragment><Icon style={{color: '#00AA5E'}} type="check-circle" theme="filled"/><span>   Yes</span></Fragment> :
-    <Fragment><Icon style={{color: '#DB2C3E'}} type="close-circle" theme="filled"/><span>   No</span></Fragment>
+    <Fragment><Icon style={{color: '#00AA5E'}} type="check-circle" theme="filled"/><span style={{paddingLeft: 10}}>Yes</span></Fragment> :
+    <Fragment><Icon style={{color: '#DB2C3E'}} type="close-circle" theme="filled"/><span style={{paddingLeft: 10}}>No</span></Fragment>
 }
 
 export default ({shareholders, openForm, removeShareholders}) => {
