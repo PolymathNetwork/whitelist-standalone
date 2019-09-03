@@ -258,7 +258,6 @@ function App() {
   }
 
   async function removeShareholders(addresses) {
-    console.log('App.removeShareholders', addresses)
     dispatch({type: a.DELETING_SHAREHOLDER})
     try {
       const queue = await tokens[selectedToken].shareholders.revokeKyc({

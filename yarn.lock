@@ -1331,10 +1331,10 @@
     semver "^6.3.0"
     uuid "^3.3.2"
 
-"@polymathnetwork/sdk@2.0.1-beta.29":
-  version "2.0.1-beta.29"
-  resolved "https://registry.yarnpkg.com/@polymathnetwork/sdk/-/sdk-2.0.1-beta.29.tgz#69b8000287fe54b2b7d34e1f1f8eb098c9b098ce"
-  integrity sha512-TFtGUeV+rkIseeqzH4ilnUX6aDRtw8ES4o94OK7gtptnJO4Mk+fNz3psZvqYK9II5LYZoeWeoif/oqN3vLYq/A==
+"@polymathnetwork/sdk@2.0.1-beta.31":
+  version "2.0.1-beta.31"
+  resolved "https://registry.yarnpkg.com/@polymathnetwork/sdk/-/sdk-2.0.1-beta.31.tgz#29916b9f0bac481b9139fe38fcfda9328ba29489"
+  integrity sha512-uxNc5cT+QetAj2Cy9g04j/UMjH+xYdfgwyx9TtX8wwIhBWtXbaHMZtH8c88fM/3zqI6+8Iijkci6/3liV4+5Dg==
   dependencies:
     "@0x/subproviders" "^3.0.2"
     "@babel/polyfill" "^7.0.0"
@@ -1344,6 +1344,7 @@
     ethereum-address "^0.0.4"
     json-stable-stringify "^1.0.1"
     lodash "^4.17.13"
+    phin "^3.4.0"
     semantic-release-cli "^5.1.1"
     semver "^5.6.0"
     uuid "^3.3.2"
@@ -3855,6 +3856,11 @@ caseless@~0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
   integrity sha1-G2gcIf+EAzyCZUMJBolCDRhxUdw=
+
+centra@^2.2.1:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/centra/-/centra-2.4.0.tgz#53846f97db27705e9f90c46e0f824f6eb697e2d1"
+  integrity sha512-AWmF3EHNe/noJHviynZOrdnUuQzT5AMgl9nJPXGvnzGXrI2ZvNDrEcdqskc4EtQwt2Q1IggXb0OXy7zZ1Xvvew==
 
 chalk@2.4.2, chalk@^2.0.0, chalk@^2.0.1, chalk@^2.1.0, chalk@^2.3.0, chalk@^2.4.1, chalk@^2.4.2:
   version "2.4.2"
@@ -11700,6 +11706,13 @@ performance-now@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/performance-now/-/performance-now-2.1.0.tgz#6309f4e0e5fa913ec1c69307ae364b4b377c9e7b"
   integrity sha1-Ywn04OX6kT7BxpMHrjZLSzd8nns=
+
+phin@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/phin/-/phin-3.4.0.tgz#479df2ecfbbc2b8a6039852970b8b15a78da5169"
+  integrity sha512-wueoW9X6HbzBN4AqV3Etv9kkgYyaObwPTsIYsUEmgDWiLI6SzYozEsOZ5e3Hd/9H0mrIUbqUuvOTA6SCqErJrQ==
+  dependencies:
+    centra "^2.2.1"
 
 pify@^2.0.0, pify@^2.3.0:
   version "2.3.0"
