@@ -19,7 +19,7 @@ const initialState = {
   editingShareholder: false,
   selectedToken: undefined,
   fetching: false,
-  userAddress: '',
+  walletAddress: '',
   polyClient: undefined,
   connected: false,
   error: '',
@@ -38,12 +38,12 @@ function reducer(state, action) {
       error: undefined // Clear previous error, if any.
     }
   case a.CONNECTED:
-    const { polyClient, networkId, userAddress } = action
+    const { polyClient, networkId, walletAddress } = action
     return {
       ...state,
       polyClient,
       networkId,
-      userAddress,
+      walletAddress,
       connecting: false,
       tip: '',
       error: undefined,
@@ -146,15 +146,15 @@ function Network({networkId}) {
   )
 }
 
-function User({userAddress}) {
-  if (userAddress)
+function User({walletAddress}) {
+  if (walletAddress)
     return (
       <Fragment>
         <Icon type="user"  style={{
           marginRight: 5,
           marginLeft: 10
         }}/>
-        <Text>{userAddress}</Text>
+        <Text>{walletAddress}</Text>
       </Fragment>
     )
   return null
@@ -168,7 +168,7 @@ function App() {
     selectedToken,
     fetching,
     tip,
-    userAddress,
+    walletAddress,
     connecting,
     error,
     networkId,
@@ -187,7 +187,7 @@ function App() {
       try {
         // A2. Get the current network and make sure it's either Mainnet or Kovan.
         const networkId = await browserUtils.getNetworkId()
-        const currentWallet = await browserUtils.getCurrentAddress()
+        const walletAddress = await browserUtils.getCurrentAddress()
         if (![-1, 1, 42].includes(networkId)) {
           dispatch({
             type: a.CONNECTION_ERROR,
@@ -205,7 +205,7 @@ function App() {
           type: a.CONNECTED,
           networkId,
           polyClient,
-          userAddress: currentWallet,
+          walletAddress,
         })
       }
       catch(error) {
@@ -225,18 +225,18 @@ function App() {
 
   // b. Fetch tokens
   useEffect(() => {
-    async function fetchTokens(dispatch, polyClient, userAddress) {
+    async function fetchTokens(dispatch, polyClient, walletAddress) {
       dispatch({type: a.FETCHING_TOKENS})
-      const tokens = await polyClient.getSecurityTokens({ userAddress })
+      const tokens = await polyClient.getSecurityTokens({ walletAddress })
       const tokenSelectOpts = tokens.map((token, i) =>
         <Option value={i} key={i}>{token.symbol}</Option>)
 
       dispatch({type: a.FETCHED_TOKENS, tokens, tokenSelectOpts})
     }
-    if (polyClient && userAddress && !tokens) {
-      fetchTokens(dispatch, polyClient, userAddress)
+    if (polyClient && walletAddress && !tokens) {
+      fetchTokens(dispatch, polyClient, walletAddress)
     }
-  }, [userAddress, polyClient, tokens])
+  }, [walletAddress, polyClient, tokens])
 
   // c. Fetch share holders.
   useEffect(() => {
@@ -285,7 +285,7 @@ function App() {
               alignItems: 'center'
             }}>
               <Network networkId={networkId} />
-              <User userAddress={userAddress} />
+              <User walletAddress={walletAddress} />
             </Header>
             <Content style={{
               padding: 50,
@@ -296,7 +296,7 @@ function App() {
                   message={error}
                   type="error"/>
               }
-              { userAddress &&
+              { walletAddress &&
                 <TokenSelector
                   tokenSelectOpts={tokenSelectOpts}/>
               }
