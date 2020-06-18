@@ -19,7 +19,7 @@ const formItemLayout = {
   },
 }
 
-const defaultShareholderValues = {
+const defaultTokenholderValues = {
   address: '',
   canSendAfter: moment().add(1, 'hour'),
   canReceiveAfter: moment().add(1, 'hour'),
@@ -88,9 +88,9 @@ function formatBool(input) {
     <Fragment><Icon style={{color: '#DB2C3E'}} type="close-circle" theme="filled"/><span style={{paddingLeft: 10}}>No</span></Fragment>
 }
 
-export const ShareholdersTable = ({shareholders, openForm, removeShareholders}) => {
+export const TokenholdersTable = ({tokenholders, openForm, removeTokenholders}) => {
   return (
-    <Table dataSource={shareholders} rowKey="address">
+    <Table dataSource={tokenholders} rowKey="address">
       <Column
         title='Address'
         dataIndex='address'
@@ -133,7 +133,7 @@ export const ShareholdersTable = ({shareholders, openForm, removeShareholders}) 
             <Button onClick={() => openForm(record.address)}>
               <Icon type="edit" theme="filled" />
             </Button>
-            <Button onClick={() => removeShareholders([record.address])}>
+            <Button onClick={() => removeTokenholders([record.address])}>
               <Icon type="delete" theme="filled" />
             </Button>
           </Fragment>
@@ -143,14 +143,14 @@ export const ShareholdersTable = ({shareholders, openForm, removeShareholders}) 
   )
 }
 
-export default ({modifyWhitelist, shareholders, removeShareholders}) => {
+export default ({modifyWhitelist, tokenholders, removeTokenholders}) => {
   const form = useForm()
   const { getFieldDecorator, setFieldsValue, resetFields, validateFields } = form
   const [state, dispatch] = useReducer(reducer, initialState)
   const { visible, editIndex, ongoingTx } = state
 
-  const shareholderExists = (address) => {
-    const ret =  shareholders.find((element) => element.address.toUpperCase() === address.toUpperCase())
+  const tokenholderExists = (address) => {
+    const ret =  tokenholders.find((element) => element.address.toUpperCase() === address.toUpperCase())
          !== undefined
     return ret
   }
@@ -187,10 +187,10 @@ export default ({modifyWhitelist, shareholders, removeShareholders}) => {
       })
   }
 
-  let editedRecord = shareholders.filter(shareholder => shareholder.address === editIndex)[0]
+  let editedRecord = tokenholders.filter(tokenholder => tokenholder.address === editIndex)[0]
 
   useEffect(() => {
-    let initialValues = editedRecord || defaultShareholderValues
+    let initialValues = editedRecord || defaultTokenholderValues
     setFieldsValue(initialValues)
   }, [editedRecord, setFieldsValue])
 
@@ -199,7 +199,7 @@ export default ({modifyWhitelist, shareholders, removeShareholders}) => {
       flexDirection: 'column'}}>
       <Button type="primary" style={{marginBottom: 20,
         alignSelf: 'flex-end'}} onClick={openForm}>Add new</Button>
-      <ShareholdersTable shareholders={shareholders} removeShareholders={removeShareholders} openForm={openForm} />
+      <TokenholdersTable tokenholders={tokenholders} removeTokenholders={removeTokenholders} openForm={openForm} />
       <Modal
         title={editedRecord ? 'Edit token holder' : 'Add a new token holder'}
         okText="Save"
@@ -225,7 +225,7 @@ export default ({modifyWhitelist, shareholders, removeShareholders}) => {
                   },
                   {
                     validator: (rule, value, callback) => {
-                      if (!editedRecord && shareholderExists(value)) {
+                      if (!editedRecord && tokenholderExists(value)) {
                         callback('Tokenholder is already present in the whitelist')
                         return
                       }

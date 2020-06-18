@@ -6,10 +6,10 @@ export default {
   ERROR: 'error',
   FETCHED_TOKENS: 'fetched_tokens',
   FETCHING_TOKENS: 'fetching_tokens',
-  SHAREHOLDERS_FETCHED: 'shareholders_fetched',
-  STORE_SHAREHOLDERS: 'store_shareholders',
-  RELOAD_SHAREHOLDERS: 'reload_shareholders',
+  TOKENHOLDERS_FETCHED: 'tokenholders_fetched',
+  STORE_TOKENHOLDERS: 'store_tokenholders',
+  RELOAD_TOKENHOLDERS: 'reload_tokenholders',
   TOKEN_SELECTED: 'token_selected',
-  DELETING_SHAREHOLDER: 'deleting_shareholder',
-  SHAREHOLDER_DELETED: 'shareholder_deleted'
+  DELETING_TOKENHOLDER: 'deleting_tokenholder',
+  TOKENHOLDER_DELETED: 'tokenholder_deleted'
 }

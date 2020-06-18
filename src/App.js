@@ -14,9 +14,9 @@ const { Option } = Select
 const { Text } = Typography
 
 const initialState = {
-  shareholders: [],
+  tokenholders: [],
   tokens: undefined,
-  editingShareholder: false,
+  editingTokenholder: false,
   selectedToken: undefined,
   fetching: false,
   walletAddress: '',
@@ -80,37 +80,37 @@ function reducer(state, action) {
       tip: 'Loading tokenholders...',
       fetching: true
     }
-  case a.RELOAD_SHAREHOLDERS:
+  case a.RELOAD_TOKENHOLDERS:
     return {
       ...state,
       fetching: true,
       tip: 'Reloading tokenholders...',
-      reloadShareholders: true,
+      reloadTokenholders: true,
     }
-  case a.SHAREHOLDERS_FETCHED:
-    let { shareholders } = action
-    shareholders = shareholders.map(shareholder => {
-      const ret = Object.assign({}, shareholder, {
-        canReceiveAfter: moment(shareholder.canReceiveAfter),
-        canSendAfter: moment(shareholder.canSendAfter),
-        kycExpiry: moment(shareholder.kycExpiry)
+  case a.TOKENHOLDERS_FETCHED:
+    let { tokenholders } = action
+    tokenholders = tokenholders.map(tokenholder => {
+      const ret = Object.assign({}, tokenholder, {
+        canReceiveAfter: moment(tokenholder.canReceiveAfter),
+        canSendAfter: moment(tokenholder.canSendAfter),
+        kycExpiry: moment(tokenholder.kycExpiry)
       })
       return ret
     })
     return {
       ...state,
-      shareholders,
+      tokenholders,
       fetching: false,
       tip: '',
-      reloadShareholders: false,
+      reloadTokenholders: false,
     }
-  case a.DELETING_SHAREHOLDER:
+  case a.DELETING_TOKENHOLDER:
     return {
       ...state,
       fetching: true,
       tip: 'Deleting token holder'
     }
-  case a.SHAREHOLDER_DELETED:
+  case a.TOKENHOLDER_DELETED:
     return {
       ...state,
       fetching: false,
@@ -163,7 +163,7 @@ function User({walletAddress}) {
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState)
   const  {
-    shareholders,
+    tokenholders,
     tokens,
     selectedToken,
     fetching,
@@ -174,7 +174,7 @@ function App() {
     networkId,
     connected,
     polyClient,
-    reloadShareholders,
+    reloadTokenholders,
     tokenSelectOpts
   } = state
 
@@ -240,36 +240,36 @@ function App() {
 
   // c. Fetch share holders.
   useEffect(() => {
-    async function fetchShareholders(dispatch, st) {
-      let shareholders = await st.shareholders.getShareholders()
-      dispatch({ type: a.SHAREHOLDERS_FETCHED, shareholders })
+    async function fetchTokenholders(dispatch, st) {
+      let tokenholders = await st.tokenholders.getTokenholders()
+      dispatch({ type: a.TOKENHOLDERS_FETCHED, tokenholders })
     }
-    if ( reloadShareholders === true | selectedToken !== undefined ) {
-      fetchShareholders(dispatch, tokens[selectedToken])
+    if ( reloadTokenholders === true | selectedToken !== undefined ) {
+      fetchTokenholders(dispatch, tokens[selectedToken])
     }
-  }, [tokens, selectedToken, reloadShareholders])
+  }, [tokens, selectedToken, reloadTokenholders])
 
   async function modifyWhitelist(data) {
-    const queue = await tokens[selectedToken].shareholders.modifyData({
-      shareholderData: data
+    const queue = await tokens[selectedToken].tokenholders.modifyData({
+      tokenholderData: data
     })
     await queue.run()
-    dispatch({type:a.RELOAD_SHAREHOLDERS})
+    dispatch({type:a.RELOAD_TOKENHOLDERS})
   }
 
-  async function removeShareholders(addresses) {
-    dispatch({type: a.DELETING_SHAREHOLDER})
+  async function removeTokenholders(addresses) {
+    dispatch({type: a.DELETING_TOKENHOLDER})
     try {
-      const queue = await tokens[selectedToken].shareholders.revokeKyc({
-        shareholderAddresses: addresses
+      const queue = await tokens[selectedToken].tokenholders.revokeKyc({
+        tokenholderAddresses: addresses
       })
       await queue.run()
-      dispatch({type: a.SHAREHOLDER_DELETED})
+      dispatch({type: a.TOKENHOLDER_DELETED})
     }
     catch (error) {
 
     }
-    dispatch({type:a.RELOAD_SHAREHOLDERS})
+    dispatch({type:a.RELOAD_TOKENHOLDERS})
   }
 
   return (
@@ -303,8 +303,8 @@ function App() {
               { selectedToken !== undefined &&
                 <Whitelist
                   modifyWhitelist={modifyWhitelist}
-                  removeShareholders={removeShareholders}
-                  shareholders={shareholders}/>
+                  removeTokenholders={removeTokenholders}
+                  tokenholders={tokenholders}/>
               }
             </Content>
           </Layout>

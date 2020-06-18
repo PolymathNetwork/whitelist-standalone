@@ -4,7 +4,7 @@
   "private": true,
   "homepage": "https://polymathnetwork.github.io/whitelist-standalone",
   "dependencies": {
-    "@polymathnetwork/sdk": "2.0.1-beta.36",
+    "@polymathnetwork/sdk": "3.0.0",
     "antd": "^3.21.2",
     "gh-pages": "^2.0.1",
     "rc-form-hooks": "^0.0.1-alpha.22",
@@ -14,10 +14,10 @@
     "web3": "^1.2.1"
   },
   "scripts": {
-    "predeploy": "NODE_OPTIONS=--max-old-space-size=4096 yarn build",
+    "predeploy": "yarn build",
     "deploy": "gh-pages -d build",
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "NODE_OPTIONS=--max-old-space-size=4096 react-scripts start",
+    "build": "NODE_OPTIONS=--max-old-space-size=4096 react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
